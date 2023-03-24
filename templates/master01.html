@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <title>GRBL WebStreamer - {% block pagename %} {% endblock %}</title>
+    <link rel="stylesheet" href="/css/style.css" type="text/css" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons8-laser-beam-32.png') }}">
+  </head>
+<body>
+
+<table class="header">
+  <tr>
+    <td><a href="/">Home</a></td>
+  </tr>
+</table>
+<br/>
+<br/>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashes">
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
+{% block contents %} {% endblock %}
+
+</body>

@@ -1,0 +1,92 @@
+body {
+    background-color: black;
+    color: gainsboro;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+/*--------------------------------------------------------------------------------------------------------*/
+/* Header */
+table.header{
+    width: 100%;
+    text-align: center;
+    height: 30px;
+    vertical-align: middle;
+}
+
+table.header tr td {
+    width:16%;
+}   
+
+/*--------------------------------------------------------------------------------------------------------*/
+/* Anchors */
+a {color:gainsboro; border-bottom: 1px dotted gold;}
+a:link {text-decoration: none;}
+a:active {font-weight: bold;}
+a:visited {color:gainsboro;}
+a:hover {
+    color:gold;
+    text-decoration: underline;
+}
+
+/*--------------------------------------------------------------------------------------------------------*/
+/* Found the glow effect here https://www.proglobalbusinesssolutions.com/css-hover-effects/ */
+table.header a {
+    color:gainsboro;    
+    transition: .5s; 
+    border-radius: 50%;
+    border-bottom: none;
+    font-weight: bold;
+}
+table.header a:before{  
+    background: gold;
+    transition: .5s;
+    transform: scale(.9);
+    z-index: -1;
+
+    border-radius: 50%;
+}
+table.header a:hover::before {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px gold;
+    }
+table.header a:hover {
+    color: gold;
+    box-shadow: 0 0 5px gold;
+    text-shadow: 0 0 5px gold;
+}
+
+/*--------------------------------------------------------------------------------------------------------*/
+/* Home page */
+
+h1 {
+    color: goldenrod;
+    font-weight:bolder;
+    font-size:x-large;
+}
+h2 {
+    color: goldenrod;
+    font-weight:bold;
+    font-size:large;
+}
+
+span.footer {
+    font-size: x-small;
+    vertical-align: bottom;
+}
+
+.flashes {
+    color:red;
+    border: red 1px solid;
+}
+
+#filebody{
+    display: block;
+    unicode-bidi: embed;
+    font-family: monospace;
+    white-space: pre;
+
+    font-size: x-small;
+    overflow: scroll;
+    max-height: 300px;
+    background-color: darkslateblue;
+}
