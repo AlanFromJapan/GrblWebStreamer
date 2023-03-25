@@ -86,6 +86,10 @@ def device_page():
         elif request.form["action"] == "status":
             res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_STATUS )
             flash(f"Sent command '{ serialUtils.CMD_STATUS }', got response '{ res }'")
+        #Send goto orign
+        elif request.form["action"] == "goto-origin":
+            res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_GOTO_ORIGIN )
+            flash(f"Sent command '{ serialUtils.CMD_GOTO_ORIGIN }', got response '{ res }'")
         else:
             flash("Unknow or TODO implement", "error")
 
