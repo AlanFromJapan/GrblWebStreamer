@@ -23,6 +23,8 @@ def allowed_file(filename):
 
 ############################ Web requests ###############################
 
+#---------------------------------------------------------------------------------------
+#landing page
 @app.route('/')
 def homepage():
     # #not logged in? go away
@@ -31,6 +33,7 @@ def homepage():
     return render_template("home01.html", pagename="Home")
 
 
+#---------------------------------------------------------------------------------------
 #handler for file upload that redirect to file process (not a page)
 @app.route('/upload-file', methods=['POST'])
 def upload_file():
@@ -55,11 +58,23 @@ def upload_file():
 
 
 
+
+#---------------------------------------------------------------------------------------
 #The "main" page to process a file
 @app.route('/process-file/<filename>', methods=['GET','POST'])
 def process_file(filename):
+    fileOnDisk = os.path.join(config.myconfig['upload folder'], secure_filename(filename))
+
+    #POST BACK POST BACK POST BACK
+    if request.method == 'POST':
+        if request.form["action"] == "simulate":
+            #do the job but with no laser power
+            serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
+            flash(f"Finished SIMULATING file '{ secure_filename(filename)}'")
+
+
     body = ''
-    with open(os.path.join(config.myconfig['upload folder'], secure_filename(filename)), mode="r") as f:
+    with open(fileOnDisk, mode="r") as f:
         body = '\n'.join(f.readlines())
         
     return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body)
@@ -67,6 +82,7 @@ def process_file(filename):
 
 
 
+#---------------------------------------------------------------------------------------
 #The page to play with the device
 @app.route('/device', methods=['GET','POST'])
 def device_page():
@@ -117,7 +133,7 @@ def device_page():
 
 
 
-
+#---------------------------------------------------------------------------------------
 #List the recently sent files
 @app.route('/replay')
 def replay_page():
@@ -131,6 +147,10 @@ def replay_page():
 Click to (re)process uploaded files:
 <ul>""" + body + "</ul>"
     return render_template("template01.html", pagename="Replay", pagecontent=body)
+
+
+
+
 ########################################################################################
 ## Main entry point
 #
