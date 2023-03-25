@@ -35,5 +35,33 @@
     </tr>
 </table>
 
+<script lang="javascript">
+/* 
+ * POOR MAN VERY BASIC REGEX SYNTAX HIGHLIGHTING v(^-^)v 
+*/
+//Taken from here (one of the solutions at the bottom)
+//https://stackoverflow.com/questions/30910516/change-text-color-of-matching-text-from-input-in-javascript
+function highlight(pattern, color) {
+    var inputText = document.getElementById("filebody");
+    var re = new RegExp(pattern, 'g');
+
+    inputText.innerHTML = inputText.innerHTML.replace(re, function (match) {
+                    return '<span style="color:'+color+ ';">' + match + '</span>';
+                });
+}
+
+//do first because the semicolon will miss with the innertext of the next matches 
+highlight(";.+", "grey");
+//Move actions
+highlight("G\\d+", "orange");
+//Settings
+highlight("M\\d+", "limegreen");
+//Laser power
+highlight("S\\d+", "pink");
+//Move speed
+highlight("F\\d+", "yellow");
+
+
+</script>    
 {{ dbg }}
 {% endblock %}
