@@ -56,7 +56,7 @@ table.header a:hover {
 }
 
 /*--------------------------------------------------------------------------------------------------------*/
-/* Home page */
+/* shared styles */
 
 h1 {
     color: goldenrod;
@@ -74,10 +74,29 @@ span.footer {
     vertical-align: bottom;
 }
 
-.flashes {
-    color:red;
-    border: red 1px solid;
+div.flashes_container {
+    width: 80%;
+    margin: 30px;
+    display: flex;
+    justify-content: center;
 }
+*.flashes {
+    border: whitesmoke 2px solid;
+    background-color: #202020;
+    width: 80%;
+    color: goldenrod;
+}
+LI.flashitem_error {
+    color: crimson;
+}
+LI.flashitem_success {
+    color:forestgreen;
+}
+
+
+/* **************************************************************************************************************** */
+/* Process page*/
+
 
 #filebody{
     display: block;
@@ -85,8 +104,26 @@ span.footer {
     font-family: monospace;
     white-space: pre;
 
+    width: 100%;
+    min-width: 200px;
+
     font-size: x-small;
     overflow: scroll;
     max-height: 300px;
-    background-color: darkslateblue;
+    background-color: #202020;
+}
+
+table.process {
+    width: 90%;
+}
+table.process tr td {
+    width:50%;
+    border: slategray 1px solid; 
+    vertical-align: top;
+}
+table.actions tr td {
+    border:none;
+}
+table.actions input {
+    width:100%;
 }

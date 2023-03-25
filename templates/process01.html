@@ -5,6 +5,35 @@
 {% block contents %} 
 <h1>File process [{{filename}}]</h1>
 
-<div id="filebody" >{{filebody}}</div>
+
+<table class="process">
+    <tr>
+        <td>
+            <h2>File content</h2>
+            <div id="filebody" >{{filebody}}</div>
+        </td>
+        <td>
+            <h2>Actions</h2>
+            <form method="post">
+                <table class="actions">
+                    <tr>
+                        <td><input type="submit" value="Frame" /></td>
+                        <td>Goes around the border of the work</td>
+                    </tr>
+                    <tr>
+                        <td><input type="submit" value="Simulate" /></td>
+                        <td>Runs the job but dynamically overlay the laser power to 1% (visible but not engraving)</td>
+                    </tr>
+                    <tr>
+                        <td><input type="submit" value="Burn" /></td>
+                        <td>Runs the job <strong>for real</strong> on the device</td>
+                    </tr>
+                </table>
+                
+              </form>
+        </td>
+    </tr>
+</table>
+
 {{ dbg }}
 {% endblock %}

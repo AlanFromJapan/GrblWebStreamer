@@ -15,13 +15,18 @@
 <br/>
 <br/>
 
-{% with messages = get_flashed_messages() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    <ul class="flashes">
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
+  <div class="flashes_container">
+    <div class="flashes">
+      ℹ️ Info
+      <ul >
+      {% for category, message in messages %}
+        <li class="flashitem_{{ category }}">{{ message }}</li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
   {% endif %}
 {% endwith %}
 

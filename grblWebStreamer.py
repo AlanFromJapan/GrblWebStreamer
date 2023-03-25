@@ -35,25 +35,25 @@ def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part')
+            flash('No file part', "error")
             return redirect("/")
         file = request.files['file']
         # if user does not select file, browser also
         # submit an empty part without filename
         if file.filename == '':
-            flash('No selected file')
+            flash('No selected file', "error")
             return redirect("/")
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(config.myconfig['upload folder'], filename))
 
-            flash(f'Successfully uploaded file [{escape(filename)}]')
+            flash(f'Successfully uploaded file [{escape(filename)}]', "success")
 
             return redirect(url_for('process_file', filename=filename))
 
 
 #The "main" page to process a file
-@app.route('/process-file/<filename>')
+@app.route('/process-file/<filename>', methods=['GET','POST'])
 def process_file(filename):
     body = ''
     with open(os.path.join(config.myconfig['upload folder'], secure_filename(filename)), mode="r") as f:
