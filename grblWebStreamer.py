@@ -1,4 +1,6 @@
 import config
+import serialUtils
+
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
 from datetime import datetime, timedelta
 import sys
@@ -63,12 +65,53 @@ def process_file(filename):
     return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body)
     
 
+
+
 #The page to play with the device
-@app.route('/device')
+@app.route('/device', methods=['GET','POST'])
 def device_page():
+    #POST BACK POST BACK POST BACK
+    if request.method == 'POST':
+        # Change port
+        if request.form["action"] == "change-port":
+            p = request.form["newtarget"]
+            p = p[:p.index(" ")]
+            config.myconfig["device port"] = p
+            flash(f"Updated in use target serial port to '{p}'.", "success")
+        #Send command
+        elif request.form["action"] == "cmd":
+            res = serialUtils.sendCommand(config.myconfig["device port"], request.form["cmd"] )
+            flash(f"Sent command '{ request.form['cmd'] }', got response '{ res }'")
+        #Send status
+        elif request.form["action"] == "status":
+            res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_STATUS )
+            flash(f"Sent command '{ serialUtils.CMD_STATUS }', got response '{ res }'")
+        else:
+            flash("Unknow or TODO implement", "error")
+
+    #Page generation
     body = ''
-        
-    return render_template("template01.html", pagename="Device")
+
+    body += f'<li>Current target Serial port: { config.myconfig["device port"] }</li>'
+
+    ports = serialUtils.listAvailableSerialPorts() 
+    if len(ports) > 0:
+        body += "<ul>"
+        for p in ports:
+            body += f'<li>Currently available port: { p }</li>'
+
+        body += "</ul>"
+
+        if not config.myconfig["device port"] in [p[:p.index(" ")] for p in ports]:
+            flash("Target port is not available: change the port or check connections.", "error")    
+    else:
+        flash("No opened serial port found. Is laser/CNC connected?", "error")
+
+    body = """<ul>""" + body + "</ul>"
+
+    return render_template("device01.html", pagename="Device", settings=body, ports=ports)
+
+
 
 
 #List the recently sent files
@@ -102,11 +145,11 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
         if len(sys.argv) == 3:
             #go HTTPS
             print("INFO: start as HTTPSSSSSSSSSSS")
-            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True, ssl_context=(sys.argv[1], sys.argv[2]))
+            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=False, ssl_context=(sys.argv[1], sys.argv[2]))
         else:
             #not secured HTTP
             print("INFO: start as HTTP unsecured")
-            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
+            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=False)
 
     finally:
         pass

@@ -85,6 +85,7 @@ div.flashes_container {
     background-color: #202020;
     width: 80%;
     color: goldenrod;
+    padding: 2px;
 }
 LI.flashitem_error {
     color: crimson;
@@ -133,9 +134,13 @@ table.process tr td {
     border: slategray 1px solid; 
     vertical-align: top;
 }
+
 table.actions tr td {
     border:none;
 }
-table.actions input {
+table.actions tr td.left {
+    width:100px ;
+}
+table.actions button {
     width:100%;
 }

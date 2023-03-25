@@ -1,0 +1,65 @@
+{% extends 'master01.html' %}
+
+{% block pagename %} Device {% endblock %}
+
+{% block contents %} 
+<h1>Device management</h1>
+
+<form id="theForm" method="post" action="/device">
+
+<table class="process">
+    <tr>
+        <td>
+            <h2>Registered settings</h2>
+            <div class="settings" >    
+{% autoescape false %}
+{{settings}}
+{% endautoescape %}
+</div>
+        </td>
+        <td>
+            <h2>Actions</h2>
+                <table class="actions">
+                    <tr>
+                        <td><button type="button" onClick="clickConfirm('action', 'status', '');"> Get <b>current</b> status</button></td>
+                        <td>Ask for current status (?)</td>
+                    </tr>
+                    <tr>
+                        <td><button type="button" onClick="clickConfirm('action', 'goto-origin', '');"> Go to <b>origin</b> [0;0]]</button></td>
+                        <td>Go to origin (G0)</td>
+                    </tr>
+                    <tr>
+                        <td><button type="button" onClick="clickConfirm('action', 'change-port', 'Confirm changing serial port?');"> Change the <b>target serial port</b></button></td>
+                            <td>Change current target port to: 
+    <select name="newtarget">
+        {% for p in ports %}
+        <option value="{{p}}">{{p}}</option>
+        {% endfor %}
+    </select>
+
+                            </td>
+                    </tr>
+                </table>
+                <br/>
+                <br/>
+                <div class="custom-cmd">
+                    <input type="text" value="" name="cmd" /><button type="button" onClick="clickConfirm('action', 'cmd', '');"> <b>Send</b></button>
+                </div>
+                
+                <div class="helper-cmd">
+                    <ul>
+                        <li>G0 goes to origin</li>
+                        <li>G0 X...Y... goes to X,Y</li>
+                        <li>G1 same as above BUT WITH LASER ON!</li>
+                        <li>? is current status</li>
+                    </ul>
+                </div>
+        </td>
+    </tr>
+</table>
+
+
+</form>
+
+{{ dbg }}
+{% endblock %}
