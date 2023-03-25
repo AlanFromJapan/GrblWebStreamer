@@ -93,6 +93,17 @@ LI.flashitem_success {
     color:forestgreen;
 }
 
+/* **************************************************************************************************************** */
+/* Home page*/
+
+div.uploader {
+    background-color: #202020;
+    min-width: 400px;
+    max-width: 600px;
+
+    margin:20px;
+    padding: 10px;
+}
 
 /* **************************************************************************************************************** */
 /* Process page*/
@@ -104,13 +115,14 @@ LI.flashitem_success {
     font-family: monospace;
     white-space: pre;
 
-    width: 100%;
     min-width: 200px;
 
     font-size: x-small;
     overflow: scroll;
     max-height: 300px;
     background-color: #202020;
+
+    padding: 5px;
 }
 
 table.process {

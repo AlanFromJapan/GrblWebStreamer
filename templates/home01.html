@@ -7,12 +7,14 @@
 By AlanFromJapan / MIT license / Full source code here <a href="https://github.com/AlanFromJapan/GrblWebStreamer">on Github</a>.<br/>
 This application is not approved nor affiliated with GRBL or anyone.<br/>
 <br/>
-<h2>Upload a GBRL file</h2>
-Pick a file to process (*.nc file only):
-<form method="post" enctype="multipart/form-data" action="upload-file">
-    <input type=file name=file>
-    <input type=submit value=Upload>
-  </form>
+<div class="uploader">
+  <h2>Upload a GBRL file</h2>
+  Pick a file to process (*.nc file only):<br/><br/>
+  <form method="post" enctype="multipart/form-data" action="upload-file">
+      <input type="file" name="file">
+      <input type="submit" value="Upload">
+    </form>
+</div>
 {{ dbg }}
 
 <br/>

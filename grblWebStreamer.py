@@ -52,6 +52,7 @@ def upload_file():
             return redirect(url_for('process_file', filename=filename))
 
 
+
 #The "main" page to process a file
 @app.route('/process-file/<filename>', methods=['GET','POST'])
 def process_file(filename):
@@ -62,6 +63,27 @@ def process_file(filename):
     return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body)
     
 
+#The page to play with the device
+@app.route('/device')
+def device_page():
+    body = ''
+        
+    return render_template("template01.html", pagename="Device")
+
+
+#List the recently sent files
+@app.route('/replay')
+def replay_page():
+    body = ''
+
+    for f in [l for l in os.listdir(config.myconfig['upload folder']) if os.path.isfile(os.path.join(config.myconfig['upload folder'], l)) and l.lower()[-3:] == '.nc']:
+        body += f"<li><a href='/process-file/{ f }'>{ f }</a></li>"
+
+    body = """
+<h1>Recently uploaded files</h1>
+Click to (re)process uploaded files:
+<ul>""" + body + "</ul>"
+    return render_template("template01.html", pagename="Replay", pagecontent=body)
 ########################################################################################
 ## Main entry point
 #
