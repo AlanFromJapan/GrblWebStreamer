@@ -1,5 +1,6 @@
 import config
 import serialUtils
+import grblUtils
 
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
 from datetime import datetime, timedelta
@@ -75,6 +76,10 @@ def process_file(filename):
             #the real thing
             serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
             flash(f"Finished EXECUTING file '{ secure_filename(filename)}'")
+        if request.form["action"] == "frame":
+            #frame the workspace
+            grblUtils.generateFrame(fileOnDisk)
+            flash(f"Finished FRAMING file '{ secure_filename(filename)}'")
         else:
             flash("Unknow or TODO implement", "error")
 

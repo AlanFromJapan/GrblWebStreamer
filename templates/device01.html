@@ -21,15 +21,15 @@
             <h2>Actions</h2>
                 <table class="actions">
                     <tr>
-                        <td><button type="button" onClick="clickConfirm('action', 'status', '');"> Get <b>current</b> status</button></td>
+                        <td><button type="button" onClick="clickConfirm('action', 'status', '');"> Get <b>ℹ️ current</b> status</button></td>
                         <td>Ask for current status (?)</td>
                     </tr>
                     <tr>
-                        <td><button type="button" onClick="clickConfirm('action', 'goto-origin', '');"> Go to <b>origin</b> [0;0]</button></td>
+                        <td><button type="button" onClick="clickConfirm('action', 'goto-origin', '');"> Go to <b>🏠 origin</b> [0;0]</button></td>
                         <td>Go to origin (G0 X0Y0)</td>
                     </tr>
                     <tr>
-                        <td><button type="button" onClick="clickConfirm('action', 'change-port', 'Confirm changing serial port?');"> Change the <b>target serial port</b></button></td>
+                        <td><button type="button" onClick="clickConfirm('action', 'change-port', 'Confirm changing serial port?');"> Change the <b>🎯 target serial port</b></button></td>
                             <td>Change current target port to: 
     <select name="newtarget">
         {% for p in ports %}
@@ -40,14 +40,14 @@
                             </td>
                     </tr>
                     <tr>
-                        <td><button type="button" onClick="clickConfirm('action', 'disconnect', '');"> <b>Disconnect</b> from the device</button></td>
+                        <td><button type="button" onClick="clickConfirm('action', 'disconnect', '');"> <b>🔌 Disconnect</b> from the device</button></td>
                         <td>Because sometimes things don't go as planned, disconnect from serial port</td>
                     </tr>
                 </table>
                 <br/>
                 <br/>
                 <div class="custom-cmd">
-                    <input type="text" value="" name="cmd" /><button type="button" onClick="clickConfirm('action', 'cmd', '');"> <b>Send</b></button>
+                    <input type="text" value="" name="cmd" /><button type="button" onClick="clickConfirm('action', 'cmd', '');"> <b>📨Send</b></button>
                 </div>
                 
                 <div class="helper-cmd">
@@ -55,6 +55,7 @@
                         <li>G0 X...Y... goes to X,Y with laser off</li>
                         <li>G1 same as above BUT WITH LASER ON!</li>
                         <li>? is current status</li>
+                        <li>$ is help and settings</li>
                         <li>! is HOLD</li>
                         <li>~ is resume</li>
                         <li><a href="https://github.com/gnea/grbl/blob/master/doc/markdown/commands.md" target="_blank">GRBL commands explained</a></li>

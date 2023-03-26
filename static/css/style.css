@@ -142,6 +142,7 @@ table.process tr td {
     vertical-align: top;
 }
 
+
 table.actions tr td {
     border:none;
 }
@@ -150,4 +151,18 @@ table.actions tr td.left {
 }
 table.actions button {
     width:100%;
+    min-height: 50px;
+}
+
+
+div.custom-cmd button{
+    min-height: 50px;
+    min-width: 100px;
+}
+div.custom-cmd input{
+    min-width: 400px;
+    min-height: 50px;
+    font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+    font-size: larger;
+    background-color: lightyellow;
 }
