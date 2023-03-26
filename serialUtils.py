@@ -73,13 +73,20 @@ def sendCommand (port, cmd:str) -> str:
         #send
         __SERIAL.write(str.encode(cmd + '\n'))
 
-        #return result 
-        return str(__SERIAL.readline().strip()) 
+        #return result (try to empty the buffer)
+        res = ''
+        while True:
+            res += __SERIAL.readline().decode().strip()
+            time.sleep(0.1)
+            if __SERIAL.in_waiting <= 0:
+                break
+
+        return res
     except Exception as ex:
         print ("EXCEPT on sendCommand: " + str(ex))
 
 
-
+#line modifier : set comments to None
 def __linemodifier_skipComments(l:str) -> str:
     if l.strip()[0] == ";":
         return None
@@ -87,6 +94,7 @@ def __linemodifier_skipComments(l:str) -> str:
         return l
 
 
+#line modifier : set laser to 1% (replace Sxxx with S010)
 def __linemodifier_laserMinimum(l:str) -> str:
     l = l.strip()
     #TODO find a way to NOT catch the final "G1 S0" that (should be here to) turn off the laser. Too late for regex now.
@@ -112,11 +120,19 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
                 if l != None:
                     #send
                     __SERIAL.write(str.encode(l + '\n'))
-                    grbl_out = __SERIAL.readline().strip() # Wait for grbl response with carriage return
-                    print(f"{line} ==> {l} ==? {str(grbl_out)}")
+                    grbl_out = __SERIAL.readline().decode().strip() # Wait for grbl response with carriage return
+                    #TODO LOG
+                    print(f"{line.strip()} ==> {l.strip()} ==? {str(grbl_out).strip()}")
     except Exception as ex:
         print("Exception processing file : " + str(ex))
+
 
 #process one file for fake (laser min val)
 def simulateFile(port:str, fileFullPath:str):
     processFile(port, fileFullPath, [__linemodifier_skipComments, __linemodifier_laserMinimum])
+
+
+#returns serial status
+def serialStatus():
+    global __SERIAL, __PORT
+    return "Not connected" if __SERIAL == None or __PORT == '' else "Connected"

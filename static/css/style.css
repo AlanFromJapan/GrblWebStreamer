@@ -94,6 +94,13 @@ LI.flashitem_success {
     color:forestgreen;
 }
 
+
+#currentstatus {
+    background-color: #202020;
+    width: 200px;
+    height:50px;
+    font-size: smaller;
+}
 /* **************************************************************************************************************** */
 /* Home page*/
 

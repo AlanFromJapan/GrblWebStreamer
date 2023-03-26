@@ -71,7 +71,12 @@ def process_file(filename):
             #do the job but with no laser power
             serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
             flash(f"Finished SIMULATING file '{ secure_filename(filename)}'")
-
+        if request.form["action"] == "burn":
+            #the real thing
+            serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
+            flash(f"Finished EXECUTING file '{ secure_filename(filename)}'")
+        else:
+            flash("Unknow or TODO implement", "error")
 
     body = ''
     with open(fileOnDisk, mode="r") as f:
@@ -106,6 +111,10 @@ def device_page():
         elif request.form["action"] == "goto-origin":
             res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_GOTO_ORIGIN )
             flash(f"Sent command '{ serialUtils.CMD_GOTO_ORIGIN }', got response '{ res }'")
+        #Disconnect
+        elif request.form["action"] == "disconnect":
+            serialUtils.disconnect()
+            flash(f"Disconnected from '{ config.myconfig['device port'] }'", "success")
         else:
             flash("Unknow or TODO implement", "error")
 
@@ -151,6 +160,17 @@ Click to (re)process uploaded files:
 
 
 
+
+#---------------------------------------------------------------------------------------
+#Returns current status (Webservice - NOT A PAGE)
+@app.route('/status')
+def status_ws():
+    stat = ''
+    stat += 'Port: ' + config.myconfig["device port"] + "\n"
+    stat += 'Status: ' + serialUtils.serialStatus()
+    return stat
+
+
 ########################################################################################
 ## Main entry point
 #
@@ -169,11 +189,11 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
         if len(sys.argv) == 3:
             #go HTTPS
             print("INFO: start as HTTPSSSSSSSSSSS")
-            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=False, ssl_context=(sys.argv[1], sys.argv[2]))
+            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True, ssl_context=(sys.argv[1], sys.argv[2]))
         else:
             #not secured HTTP
             print("INFO: start as HTTP unsecured")
-            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=False)
+            app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
 
     finally:
         pass

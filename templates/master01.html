@@ -4,14 +4,16 @@
     <link rel="stylesheet" href="/css/style.css" type="text/css" />
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='icons8-laser-beam-32.png') }}">
+    <script type="text/javascript" src="/js/utils.js"></script>
   </head>
 <body>
 
 <table class="header">
   <tr>
     <td><a href="/">Home</a></td>
-    <td><a href="/device">Laser/CNC</a></td>
+    <td><a href="/device">Device</a></td>
     <td><a href="/replay">Replay</a></td>
+    <td><div id="currentstatus"></div></td>
   </tr>
 </table>
 <br/>
@@ -36,20 +38,8 @@
 {% block contents %} {% endblock %}
 
 <script type="text/javascript">
-  //Adds a confirmation popup before submitting the form (or just submit if pmessage == '')
-  function clickConfirm(pname, pvalue, pmessage="Sure ?") {
-    if (pmessage == '' || confirm(pmessage)){
-      var f = document.getElementById('theForm');
 
-      var hiddenField = document.createElement('input');
-      hiddenField.type = 'hidden';
-      hiddenField.name = pname;
-      hiddenField.value = pvalue;
-
-      f.appendChild(hiddenField);
-      f.submit();
-    }
-  }
+  updateCurrentStatus();
 
 </script>
 </body>
