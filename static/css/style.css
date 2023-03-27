@@ -111,6 +111,8 @@ div.uploader {
 
     margin:20px;
     padding: 10px;
+
+    border: solid 1px darkgoldenrod;
 }
 
 /* **************************************************************************************************************** */
@@ -165,4 +167,29 @@ div.custom-cmd input{
     font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
     font-size: larger;
     background-color: lightyellow;
+}
+
+
+div.footer{
+    text-align: center;
+    font-size: x-small;
+
+    position:absolute;
+    bottom:0;
+
+    width:90%;
+}
+/* **************************************************************************************************************** */
+/* Replay page*/
+
+.replaylist {
+    background-color: #202020;
+    min-width: 400px;
+    max-width: 600px;
+
+    margin:20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    border: solid 1px darkgoldenrod;
 }

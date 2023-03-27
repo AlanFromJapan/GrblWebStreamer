@@ -1,0 +1,40 @@
+{% extends 'master01.html' %}
+
+{% block pagename %} Operating system {% endblock %}
+
+{% block contents %} 
+<h1>OS Commands</h1>
+
+Because you need a place to turn off the PC.
+
+<form id="theForm" method="post" >
+
+<table class="process">
+    <tr>
+        <td>
+            <h2>Actions</h2>
+                <table class="actions">
+                    <tr>
+                        <td class="left"><button type="button" onClick="clickConfirm('action', 'shutdown', 'Are you SURE you want to turn off the PC?');"><b>🛑🔌🛑 Shutdown</b> the PC</button></td>
+                        <td>Turn off nicely your PC/Raspi.</td>
+                    </tr>
+                    <tr>
+                        <td class="left"><button type="button" onClick="clickConfirm('action', 'reboot', 'Are you SURE you want to reboot the PC?');"><b>♻️ Reboot</b> the PC</button></td>
+                        <td>Sometimes it fixes all problems.</td>
+                    </tr>
+                </table>
+                
+        </td>
+    </tr>
+</table>
+
+</form>
+
+To ensure this works, you need to edit your sudoer file. Type <code>sudo visudo</code> and add at the bottom:
+<pre>
+pi ALL=(ALL) NOPASSWD: /sbin/shutdown , /sbin/reboot
+</pre>
+where pi is the user running this app. 
+  
+{{ dbg }}
+{% endblock %}

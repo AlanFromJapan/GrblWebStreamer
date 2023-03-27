@@ -159,9 +159,33 @@ def replay_page():
     body = """
 <h1>Recently uploaded files</h1>
 Click to (re)process uploaded files:
-<ul>""" + body + "</ul>"
-    return render_template("template01.html", pagename="Replay", pagecontent=body)
+<ul class="replaylist">""" + body + "</ul>"
+    body += """<br/>
+Remember: go to the <a href="/">Home page</a> to upload a script!"""
 
+    return render_template("template01.html", pagename="Replay", pagecontent=body)
+    
+
+
+
+#---------------------------------------------------------------------------------------
+#The page to turn off the PC
+@app.route('/OS', methods=['GET','POST'])
+def os_page():
+    #POST BACK POST BACK POST BACK
+    if request.method == 'POST':
+        # Shutdown
+        if request.form["action"] == "shutdown":
+            os.system("sudo shutdown -h now")
+            flash(f"Going for SHUTDOWN now. If it does not happen, maybe you're not sudoer or you need to edit visudo to allow the user to run /sbin/shudown without password.", "success")
+        #Reboot
+        elif request.form["action"] == "reboot":
+            os.system("sudo shutdown -r now")
+            flash(f"Going for REBOOT now. If it does not happen, maybe you're not sudoer or you need to edit visudo to allow the user to run /sbin/shudown without password.", "success")
+        else:
+            flash("Unknow or TODO implement", "error")    
+    
+    return render_template("os01.html", pagename="OS")
 
 
 
