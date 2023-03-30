@@ -20,6 +20,17 @@ Runs on python3, dependecies:
  - Flask
  - pySerial
  
+# Setup
+## Basics
+ - sudo apt install python3-pip
+ - sudo python3 -m pip install -r requirements.txt
+
+We'll have it run with a power user account because this is NOT MEANT to be accisble from the net. If you do it, make another account and use that one instead (make it part of *dialout* group to access serial). My power user will be "pi".
+
+## Configuration
+ - Copy config.sample.py to config.py and customize at will
+ - Make it start at start-up: edit /etc/rc.local and add "*/path/to/installation/*GrblWebStreamer/start-service.sh"
+ - Reboot and test
 
 # G-code things to remember
 This helped me so in case:
