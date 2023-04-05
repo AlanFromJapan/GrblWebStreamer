@@ -68,18 +68,21 @@ def process_file(filename):
 
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
+        #start time
+        tstart = time.time()        
+
         if request.form["action"] == "simulate":
             #do the job but with no laser power
             serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
-            flash(f"Finished SIMULATING file '{ secure_filename(filename)}'")
-        if request.form["action"] == "burn":
+            flash(f"Finished SIMULATING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+        elif request.form["action"] == "burn":
             #the real thing
             serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
-            flash(f"Finished EXECUTING file '{ secure_filename(filename)}'")
-        if request.form["action"] == "frame":
+            flash(f"Finished EXECUTING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+        elif request.form["action"] == "frame":
             #frame the workspace
             grblUtils.generateFrame(fileOnDisk)
-            flash(f"Finished FRAMING file '{ secure_filename(filename)}'")
+            flash(f"Finished FRAMING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
         else:
             flash("Unknow or TODO implement", "error")
 
