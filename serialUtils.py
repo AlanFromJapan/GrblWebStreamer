@@ -2,6 +2,7 @@ import serial
 import serial.tools.list_ports
 import time
 import re
+from enum import Enum, auto
 
 #GRBL so assume it constant
 BAUDRATE=115200
@@ -15,6 +16,14 @@ CMD_GOTO_ORIGIN = "G0 X0Y0"
 __SERIAL = None
 __PORT = ''
 
+#The status of the device connected from Serial/GRBL PoV
+class DeviceStatus(Enum):
+    NOT_CONNECTED = auto()
+    READY = auto()
+    BUSY = auto()
+    ERROR = auto()
+__STATUS = DeviceStatus.NOT_CONNECTED
+
 
 ##############################################################################################################################
 
@@ -26,18 +35,22 @@ def listAvailableSerialPorts():
 
 
 #connects or reconnect or do nothing
-def connect(port):
-    global __SERIAL, __PORT
+def connect(port, forceDisconnect = False):
+    global __SERIAL, __PORT, __STATUS
     #rightly connected?
     if __PORT == port and __SERIAL != None :
         #nothing to do
         return
 
     #connected to wrong port?
-    if __PORT != '' or __SERIAL != None:
+    if __PORT != '' or __SERIAL != None:        
         #first DIS-connect
-        disconnect()
 
+        if __STATUS in [DeviceStatus.BUSY] and not forceDisconnect:
+            raise Exception ("Status error: device is busy, cannot disconnect (try force).")
+
+        disconnect()
+        
     #not connected
     __SERIAL = serial.Serial(port,BAUDRATE)
     __PORT = port
@@ -46,12 +59,15 @@ def connect(port):
     time.sleep(2)
     __SERIAL.flushInput()
 
+    #set status
+    __STATUS = DeviceStatus.READY
+
 
 
 
 #Disconnects from Serial
 def disconnect():
-    global __SERIAL, __PORT
+    global __SERIAL, __PORT, __STATUS
     try:
         __SERIAL.close()
     except Exception as ex:
@@ -60,15 +76,24 @@ def disconnect():
     
     __SERIAL = None
     __PORT = ''
+    __STATUS = DeviceStatus.NOT_CONNECTED
 
 
 
 
 #send 1 command to the serial device (creating a new connection) and returns the response
 def sendCommand (port, cmd:str) -> str:
-    global __SERIAL
+    global __SERIAL, __STATUS
+
+    if __STATUS in [DeviceStatus.BUSY]:
+        #allow for error, contrary to send file so you can "unstuck" the device with a magic command ... maybe.
+        raise Exception ("Status error: device is busy, cannot send a command.")
+
     try:
         connect(port)
+
+        #update status
+        __STATUS = DeviceStatus.BUSY
 
         #send
         __SERIAL.write(str.encode(cmd + '\n'))
@@ -81,9 +106,14 @@ def sendCommand (port, cmd:str) -> str:
             if __SERIAL.in_waiting <= 0:
                 break
 
+        #update status
+        __STATUS = DeviceStatus.READY
+
         return res
     except Exception as ex:
         print ("EXCEPT on sendCommand: " + str(ex))
+        #update status
+        __STATUS = DeviceStatus.ERROR
 
 
 #line modifier : set comments to None
@@ -104,9 +134,16 @@ def __linemodifier_laserMinimum(l:str) -> str:
 
 #process a file, line per line, applying modifiers to each line before sending them (ignore comments, change values on the fly, etc.)
 def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_skipComments]):
-    global __SERIAL
+    global __SERIAL, __STATUS
+
+    if __STATUS in [DeviceStatus.BUSY, DeviceStatus.ERROR]:
+        raise Exception ("Status error: device is busy or in error, cannot start a new job.")
+
     try:
         connect(port)
+
+        #update status
+        __STATUS = DeviceStatus.BUSY
 
         with open(fileFullPath, "r") as f:
             for line in f:
@@ -120,11 +157,20 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
                 if l != None:
                     #send
                     __SERIAL.write(str.encode(l + '\n'))
-                    grbl_out = __SERIAL.readline().decode().strip() # Wait for grbl response with carriage return
+                    # Wait for grbl response with carriage return
+                    grbl_out = __SERIAL.readline().decode().strip() 
+
+                    #TODO check for the answer to be "ok" and if not handle it
+
                     #TODO LOG
                     print(f"{line.strip()} ==> {l.strip()} ==? {str(grbl_out).strip()}")
+        #update status
+        __STATUS = DeviceStatus.READY
+
     except Exception as ex:
         print("Exception processing file : " + str(ex))
+        #update status
+        __STATUS = DeviceStatus.ERROR
 
 
 #process one file for fake (laser min val)
@@ -134,5 +180,5 @@ def simulateFile(port:str, fileFullPath:str):
 
 #returns serial status
 def serialStatus():
-    global __SERIAL, __PORT
-    return "Not connected" if __SERIAL == None or __PORT == '' else "Connected"
+    global __SERIAL, __PORT, __STATUS
+    return "Not connected" if __SERIAL == None or __PORT == '' else f"Connected ({ __STATUS.name })"

@@ -71,20 +71,23 @@ def process_file(filename):
         #start time
         tstart = time.time()        
 
-        if request.form["action"] == "simulate":
-            #do the job but with no laser power
-            serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
-            flash(f"Finished SIMULATING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
-        elif request.form["action"] == "burn":
-            #the real thing
-            serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
-            flash(f"Finished EXECUTING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
-        elif request.form["action"] == "frame":
-            #frame the workspace
-            grblUtils.generateFrame(fileOnDisk)
-            flash(f"Finished FRAMING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
-        else:
-            flash("Unknow or TODO implement", "error")
+        try:
+            if request.form["action"] == "simulate":
+                #do the job but with no laser power
+                serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
+                flash(f"Finished SIMULATING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+            elif request.form["action"] == "burn":
+                #the real thing
+                serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
+                flash(f"Finished EXECUTING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+            elif request.form["action"] == "frame":
+                #frame the workspace
+                grblUtils.generateFrame(fileOnDisk)
+                flash(f"Finished FRAMING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+            else:
+                flash("Unknow or TODO implement", "error")
+        except Exception as ex:
+            flash (f"ERROR occured with message '{ ex }'", "error")
 
     body = ''
     with open(fileOnDisk, mode="r") as f:
@@ -156,7 +159,12 @@ def device_page():
 def replay_page():
     body = ''
 
-    for f in [l for l in os.listdir(config.myconfig['upload folder']) if os.path.isfile(os.path.join(config.myconfig['upload folder'], l)) and l.lower()[-3:] == '.nc']:
+    #list of files
+    l = [l for l in os.listdir(config.myconfig['upload folder']) if os.path.isfile(os.path.join(config.myconfig['upload folder'], l)) and l.lower()[-3:] == '.nc']
+    #sorted ignorecase
+    l = sorted(l, key=lambda x: str(x).lower())
+
+    for f in l:
         body += f"<li><a href='/process-file/{ f }'>{ f }</a></li>"
 
     body = """
