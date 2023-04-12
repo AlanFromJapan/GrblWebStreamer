@@ -1,6 +1,7 @@
 import config
 import serialUtils
 import grblUtils
+from  notifiers.baseNotifier import BaseNotifier, Job 
 
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
 from datetime import datetime, timedelta
@@ -17,6 +18,7 @@ app.secret_key = config.myconfig["secret_key"]
 
 ALLOWED_EXTENSIONS = set(['nc'])
 
+notifier = BaseNotifier()
 
 # return if filename is in the list of acceptable files
 def allowed_file(filename):
@@ -215,6 +217,7 @@ def status_ws():
 ## Main entry point
 #
 if __name__ == '__main__':
+    notifier.NotifyJobStart(Job("Hello"))
     print ("""
 USAGE:
     python3 grblWebStreamer.py [path_to_cert.pem path_to_key.perm]
