@@ -1,2 +1,4 @@
 flask
 pySerial
+line-bot-sdk
+
