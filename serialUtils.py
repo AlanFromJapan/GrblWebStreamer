@@ -141,7 +141,13 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
 
     try:
         connect(port)
+    except Exception as ex:
+        print("Error at connection : " + str(ex))
+        #update status
+        __STATUS = DeviceStatus.NOT_CONNECTED
+        raise Exception("Failed to connect to device - see logs")
 
+    try:
         #update status
         __STATUS = DeviceStatus.BUSY
 
@@ -171,6 +177,8 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
         print("Exception processing file : " + str(ex))
         #update status
         __STATUS = DeviceStatus.ERROR
+
+        raise ex
 
 
 #process one file for fake (laser min val)

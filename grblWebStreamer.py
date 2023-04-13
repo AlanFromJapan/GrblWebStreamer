@@ -216,6 +216,30 @@ def os_page():
 
 
 
+
+#---------------------------------------------------------------------------------------
+#Shows the log file
+@app.route('/logs')
+def logs_page():
+    body = f"""
+<h1>Logs</h1>
+<p>File is at <code>{ config.myconfig["logfile"] }</code>:</p>
+<pre>""" 
+
+    try:
+        with open (config.myconfig["logfile"], "r") as f:
+            body += f.read()
+    except Exception as ex:
+        body += "*** NO LOG FILE ***<br/>"
+        body += "Exception message: "+ str(ex)
+
+    body += "</pre>"
+
+    return render_template("template01.html", pagename="Logs", pagecontent=body)
+    
+
+
+
 #---------------------------------------------------------------------------------------
 #Returns current status (Webservice - NOT A PAGE)
 @app.route('/status')

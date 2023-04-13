@@ -8,5 +8,7 @@ myconfig = {
 
     "device port" : "/dev/ttyACM0",
 
+    "logfile" : "/tmp/grblLogs.log",
+
     "notifiers" : [ BaseNotifier(), FlashNotifier() ]
 }
