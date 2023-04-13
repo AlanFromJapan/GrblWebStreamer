@@ -27,6 +27,25 @@ class LineBotNotifier(BaseNotifier):
         self.__targetId = targetID
 
 
+
+    #---------------------------------------------------------------------------------------------------------
+    def NotifyServerReady(self):
+        try:
+            #see https://developers.line.biz/en/docs/messaging-api/emoji-list/#specify-emojis-in-message-object
+            #and https://pypi.org/project/line-bot-sdk/
+            emoji = [
+                {
+                    "index": 0,
+                    "productId": "5ac21a18040ab15980c9b43e",
+                    "emojiId": "029" #a fire
+                }
+            ]
+            self.__line_bot_api.push_message(self.__targetId , TextSendMessage(text="$ " + self._makeReadyMsg(), emojis=emoji))
+        except Exception as ex:
+            print(f"LineBotNotifier.ready failed with message '{ str(ex)}'")
+
+
+
     #---------------------------------------------------------------------------------------------------------
     def NotifyJobStart(self, j: Job):
         try:

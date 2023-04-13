@@ -5,6 +5,7 @@ myconfig = {
     "app_port" : 56554,
     "upload folder" : "/tmp",
     "secret_key" : "whatever you want!!",
+    "notif on startup" : True,
 
     "device port" : "/dev/ttyACM0",
 

@@ -24,6 +24,15 @@ def allowed_file(filename):
 
 
 
+############################ App Events ###############################
+#push a message to say that flask is ready (so I get a notif via Line)
+def flask_ready():
+    for x in config.myconfig["notifiers"]: 
+        try:
+            x.NotifyServerReady()
+        except:
+            #ignore
+            pass
 
 ############################ Web requests ###############################
 
@@ -264,6 +273,10 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
         #start web interface
         app.debug = not config.myconfig["isProd"]
         
+        #notif of the startup
+        if "notif on startup" in config.myconfig and config.myconfig["notif on startup"]:
+            flask_ready()
+
         #run as HTTPS?
         if len(sys.argv) == 3:
             #go HTTPS
