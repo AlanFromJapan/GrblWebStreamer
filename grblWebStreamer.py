@@ -18,11 +18,12 @@ app.secret_key = config.myconfig["secret_key"]
 
 ALLOWED_EXTENSIONS = set(['nc'])
 
-notifier = BaseNotifier()
-
 # return if filename is in the list of acceptable files
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
 
 ############################ Web requests ###############################
 
@@ -71,25 +72,37 @@ def process_file(filename):
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
         #start time
-        tstart = time.time()        
+        j = Job(secure_filename(filename))    
+        #notify
+        for x in config.myconfig["notifiers"]: x.NotifyJobStart(j)
 
         try:
             if request.form["action"] == "simulate":
                 #do the job but with no laser power
                 serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
-                flash(f"Finished SIMULATING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+                j.finish()
+
+                #notify
+                for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
             elif request.form["action"] == "burn":
                 #the real thing
                 serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
-                flash(f"Finished EXECUTING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+                j.finish()
+                
+                #notify
+                for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
             elif request.form["action"] == "frame":
                 #frame the workspace
                 grblUtils.generateFrame(fileOnDisk)
-                flash(f"Finished FRAMING file '{ secure_filename(filename)}' in {(time.time() - tstart):0.2f}s")
+                j.finish()
+                
+                #notify
+                for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
             else:
                 flash("Unknow or TODO implement", "error")
         except Exception as ex:
-            flash (f"ERROR occured with message '{ ex }'", "error")
+            #notify
+            for x in config.myconfig["notifiers"]: x.NotifyJobError(j, extra=str(ex))
 
     body = ''
     with open(fileOnDisk, mode="r") as f:
@@ -217,7 +230,6 @@ def status_ws():
 ## Main entry point
 #
 if __name__ == '__main__':
-    notifier.NotifyJobStart(Job("Hello"))
     print ("""
 USAGE:
     python3 grblWebStreamer.py [path_to_cert.pem path_to_key.perm]
