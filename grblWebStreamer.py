@@ -10,6 +10,9 @@ import os
 import time
 
 from werkzeug.utils import secure_filename
+import socket
+
+from werkzeug.serving import get_interface_ip
 from markupsafe import escape
 
 ############################ FLASK VARS #################################
@@ -29,9 +32,10 @@ def allowed_file(filename):
 def flask_ready():
     for x in config.myconfig["notifiers"]: 
         try:
-            x.NotifyServerReady()
-        except:
+            x.NotifyServerReady(get_interface_ip(socket.AF_INET) + ":" + str(config.myconfig["app_port"]))
+        except Exception as ex:
             #ignore
+            #print(ex)
             pass
 
 ############################ Web requests ###############################

@@ -29,7 +29,7 @@ class LineBotNotifier(BaseNotifier):
 
 
     #---------------------------------------------------------------------------------------------------------
-    def NotifyServerReady(self):
+    def NotifyServerReady(self, ip:str = "<unknown IP>"):
         try:
             #see https://developers.line.biz/en/docs/messaging-api/emoji-list/#specify-emojis-in-message-object
             #and https://pypi.org/project/line-bot-sdk/
@@ -40,7 +40,7 @@ class LineBotNotifier(BaseNotifier):
                     "emojiId": "029" #a fire
                 }
             ]
-            self.__line_bot_api.push_message(self.__targetId , TextSendMessage(text="$ " + self._makeReadyMsg(), emojis=emoji))
+            self.__line_bot_api.push_message(self.__targetId , TextSendMessage(text="$ " + self._makeReadyMsg(ip), emojis=emoji))
         except Exception as ex:
             print(f"LineBotNotifier.ready failed with message '{ str(ex)}'")
 

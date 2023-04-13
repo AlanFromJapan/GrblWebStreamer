@@ -27,8 +27,8 @@ class Job():
 class BaseNotifier():
     __dateformat = '{0:%Y/%m/%d@%H:%M:%S}'
 
-    def NotifyServerReady (self):
-        print(self._makeReadyMsg())
+    def NotifyServerReady (self, ip:str = "<unknown IP>"):
+        print(self._makeReadyMsg(ip))
 
     def NotifyJobStart(self, j: Job):
         print(self._makeStartMsg(j))
@@ -39,8 +39,8 @@ class BaseNotifier():
     def NotifyJobError(self, j: Job, extra:str = None):
         print(self._makeErrorMsg(j, extra))
 
-    def _makeReadyMsg(self):
-        return "GRBL WebStreamer application startup!"
+    def _makeReadyMsg(self, ip:str):
+        return f"GRBL WebStreamer startup, now listening on http://{ip}"
     
     def _makeStartMsg(self, j:Job):
         return f"Starting job '{j.name}' at {self.__dateformat.format(j.start)}"
@@ -60,7 +60,7 @@ class FlashNotifier(BaseNotifier):
     def __init__(self) -> None:
         super().__init__()
 
-    def NotifyServerReady (self):
+    def NotifyServerReady (self, ip:str = "<unknown IP>"):
         #do nothing - not in a page
         pass
 
