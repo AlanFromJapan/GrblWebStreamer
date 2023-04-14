@@ -1,7 +1,7 @@
 import config
 import serialUtils
 import grblUtils
-from  notifiers.baseNotifier import BaseNotifier, Job 
+from  notifiers.baseNotifier import Job, JobType
 
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
 from datetime import datetime, timedelta
@@ -85,7 +85,16 @@ def process_file(filename):
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
         #start time
-        j = Job(secure_filename(filename))    
+        jt = JobType.BURN
+        try:
+            #too lazy to check possible values etc. 
+            jt = JobType[request.form["action"].upper()]
+        except:
+            pass
+        
+        #this job
+        j = Job(secure_filename(filename), jobType=jt)
+
         #notify
         for x in config.myconfig["notifiers"]: x.NotifyJobStart(j)
 

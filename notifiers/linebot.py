@@ -1,5 +1,5 @@
 #Notifier for NAVER Line bot
-from  notifiers.baseNotifier import Job, BaseNotifier
+from  notifiers.baseNotifier import Job, BaseNotifier, JobType
 
 from linebot import (
     LineBotApi
@@ -48,6 +48,10 @@ class LineBotNotifier(BaseNotifier):
 
     #---------------------------------------------------------------------------------------------------------
     def NotifyJobStart(self, j: Job):
+        if j.jobType not in [JobType.BURN, JobType.SIMULATE]:
+            #don't spam for jobs I'm not interested or in front of the device anyway
+            return
+
         try:
             #see https://developers.line.biz/en/docs/messaging-api/emoji-list/#specify-emojis-in-message-object
             #and https://pypi.org/project/line-bot-sdk/
@@ -67,6 +71,10 @@ class LineBotNotifier(BaseNotifier):
 
     #---------------------------------------------------------------------------------------------------------
     def NotifyJobCompletion(self, j: Job):
+        if j.jobType not in [JobType.BURN, JobType.SIMULATE]:
+            #don't spam for jobs I'm not interested or in front of the device anyway
+            return
+
         try:
             #see https://developers.line.biz/en/docs/messaging-api/emoji-list/#specify-emojis-in-message-object
             #and https://pypi.org/project/line-bot-sdk/
@@ -86,6 +94,8 @@ class LineBotNotifier(BaseNotifier):
 
     #---------------------------------------------------------------------------------------------------------
     def NotifyJobError(self, j: Job, extra:str = None):
+        #notify anyway on errors ... in case
+
         try:
             #see https://developers.line.biz/en/docs/messaging-api/emoji-list/#specify-emojis-in-message-object
             #and https://pypi.org/project/line-bot-sdk/
