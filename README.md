@@ -1,5 +1,5 @@
 # GrblWebStreamer
-A simple python headless and web interface UI to stream GRBL to a CNC/Laser.
+A simple python headless and web interface UI to stream GRBL to a Laser engraver, that can push you notifications to Naver Line.
 
 Why? Because I don't want my laptop stuck to the laser all the time it burns. And because LightBurn is great but crashes EVERY TIME my Ubuntu locks screen (that hopefully will be fixed by them one day but until then). And because I find it fun to do (maybe mostly, ok).
 
@@ -19,6 +19,7 @@ If you want to do MORE than just stream a GRBL file on a raspi (nearly headless)
 Runs on python3, dependecies:
  - Flask
  - pySerial
+ - line-bot-sdk
  
 # Setup
 ## Basics
@@ -31,6 +32,14 @@ We'll have it run with a power user account because this is NOT MEANT to be acci
  - Copy config.sample.py to config.py and customize at will
  - Make it start at start-up: edit /etc/rc.local and add "*/path/to/installation/*GrblWebStreamer/start-service.sh"
  - Reboot and test
+
+## How to setup the Naver Line notifier
+Add in your config.py in the "notifiers" list member a member :
+        LineBotNotifier(
+            channelAccessToken="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
+            targetID="U123456abcd..."
+        )
+That you will find in your Line developer channel (see https://pypi.org/project/line-bot-sdk/).
 
 # G-code things to remember
 This helped me so in case:
