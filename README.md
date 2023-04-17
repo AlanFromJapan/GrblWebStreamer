@@ -16,7 +16,7 @@ If you want to do MORE than just stream a GRBL file on a raspi (nearly headless)
  - GRBL commands list https://www.sainsmart.com/blogs/news/grbl-v1-1-quick-reference
 
 ## Technical
-Runs on python3, dependecies:
+Runs on python3, dependencies:
  - Flask
  - pySerial
  - line-bot-sdk
@@ -46,3 +46,4 @@ This helped me so in case:
  - Fxxxx sets the move speed in unit per minute (xxx=1800 == 30mm/sec)
  - Sxxx sets the laser power in per thousands (xxx=600 == 60.0%)
  - G0 is move but don't burn, G1 is move n burn
+ - G90 means positions ABSOLUTE, G91 means positions are RELATIVE
