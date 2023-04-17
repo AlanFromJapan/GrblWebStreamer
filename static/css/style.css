@@ -174,10 +174,12 @@ div.footer{
     text-align: center;
     font-size: x-small;
 
-    position:absolute;
+    position:fixed;
     bottom:0;
 
-    width:90%;
+    width:100%;
+    background-color: #303030;
+
 }
 /* **************************************************************************************************************** */
 /* Replay page*/
