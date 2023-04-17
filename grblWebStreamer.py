@@ -19,7 +19,7 @@ from markupsafe import escape
 app = Flask(__name__, static_url_path='')
 app.secret_key = config.myconfig["secret_key"]
 
-ALLOWED_EXTENSIONS = set(['nc'])
+ALLOWED_EXTENSIONS = set(['nc', 'gc'])
 
 # return if filename is in the list of acceptable files
 def allowed_file(filename):
@@ -67,11 +67,20 @@ def upload_file():
             return redirect("/")
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            
+            #force extension to .nc
+            filename = filename[:filename.rfind(".")] + ".nc"
+
             file.save(os.path.join(config.myconfig['upload folder'], filename))
 
             flash(f'Successfully uploaded file [{escape(filename)}]', "success")
 
             return redirect(url_for('process_file', filename=filename))
+        else:
+
+            flash(f"Forbidden file extension, use one of {ALLOWED_EXTENSIONS}", "error")
+            return redirect("/")
+
 
 
 
