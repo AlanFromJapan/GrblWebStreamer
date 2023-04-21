@@ -4,6 +4,9 @@ import datetime
 import os
 import config
 
+import grbl2image.grbl2image as G2I
+from PIL import Image
+
 REGEX_LIGHTBURN_BOUNDS=";\s+Bounds: X([0-9\.]+) Y([0-9\.]+) to X([0-9\.]+) Y([0-9\.]+)"
 
 #Try to extract the wellknown comment about boundaries to get the frame details.
@@ -19,6 +22,7 @@ def __getFrameFromComments (fileFullPath):
                 return [[grp[0], grp[1]], [grp[2], grp[3]]]
 
     return None
+
 
 #Attempts to frame tne file content (just more around where the action will be)
 def generateFrame(fileFullPath):
@@ -77,3 +81,15 @@ M2
         except:
             #TODO LOG
             print(f"Couldn't delete temp frame file { tempfile }")
+
+
+#Creates an image PNG of the job stored in same folder, same name, with PNG suffix
+def createThumbnailForJob(fileFullPath:str):
+    #Generate the PIL Image object based on sample code
+    img = G2I.processFile(fileFullPath, color="crimson")
+
+    #final flip because the image 0,0 is top left and for us human it's at the bottom left
+    img = img.transpose(Image.FLIP_TOP_BOTTOM)    
+
+    thumbnail = os.path.join("static", "thumbnails", os.path.basename(fileFullPath) + ".png")
+    img.save(thumbnail)

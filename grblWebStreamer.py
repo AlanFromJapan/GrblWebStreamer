@@ -75,6 +75,16 @@ def upload_file():
 
             flash(f'Successfully uploaded file [{escape(filename)}]', "success")
 
+            #try to make a thumbnail img
+            try:
+                grblUtils.createThumbnailForJob(os.path.join(config.myconfig['upload folder'], filename))
+                flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
+            except Exception as ex:
+                flash(f'Filed creating thumbnail for [{escape(filename)}]', "error")
+                #TODO LOG
+                print ("error on making thumbnail: " + str(ex))
+
+
             return redirect(url_for('process_file', filename=filename))
         else:
 
@@ -93,51 +103,67 @@ def process_file(filename):
 
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
-        #start time
-        jt = JobType.BURN
-        try:
-            #too lazy to check possible values etc. 
-            jt = JobType[request.form["action"].upper()]
-        except:
-            pass
-        
-        #this job
-        j = Job(secure_filename(filename), jobType=jt)
+        if request.form["action"] == "regen_thumbnail":
+            #try to (re)make a thumbnail img
+            try:
+                grblUtils.createThumbnailForJob(fileOnDisk)
+                flash(f'Successfully created thumbnail for [{escape(secure_filename(filename))}]', "success")
+            except Exception as ex:
+                flash(f'Filed creating thumbnail for [{escape(secure_filename(filename))}]', "error")
+                #TODO LOG
+                print ("error on making thumbnail: " + str(ex))
+        else:
+            # START A JOB 
+            #start time
+            jt = JobType.BURN
+            try:
+                #too lazy to check possible values etc. 
+                jt = JobType[request.form["action"].upper()]
+            except:
+                pass
+            
+            #this job
+            j = Job(secure_filename(filename), jobType=jt)
 
-        #notify
-        for x in config.myconfig["notifiers"]: x.NotifyJobStart(j)
-
-        try:
-            if request.form["action"] == "simulate":
-                #do the job but with no laser power
-                serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
-                j.finish()
-
-                #notify
-                for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
-            elif request.form["action"] == "burn":
-                #the real thing
-                serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
-                j.finish()
-                
-                #notify
-                for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
-            elif request.form["action"] == "frame":
-                #frame the workspace
-                grblUtils.generateFrame(fileOnDisk)
-                j.finish()
-                
-                #notify
-                for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
-            else:
-                flash("Unknow or TODO implement", "error")
-        except Exception as ex:
             #notify
-            for x in config.myconfig["notifiers"]: x.NotifyJobError(j, extra=str(ex))
+            for x in config.myconfig["notifiers"]: x.NotifyJobStart(j)
+
+            try:
+                if request.form["action"] == "simulate":
+                    #do the job but with no laser power
+                    serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
+                    j.finish()
+
+                    #notify
+                    for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
+                elif request.form["action"] == "burn":
+                    #the real thing
+                    serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
+                    j.finish()
+                    
+                    #notify
+                    for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
+                elif request.form["action"] == "frame":
+                    #frame the workspace
+                    grblUtils.generateFrame(fileOnDisk)
+                    j.finish()
+                    
+                    #notify
+                    for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
+                else:
+                    flash("Unknow or TODO implement", "error")
+            except Exception as ex:
+                #notify
+                for x in config.myconfig["notifiers"]: x.NotifyJobError(j, extra=str(ex))
 
     body = ''
+    MAX_LINES=100
     with open(fileOnDisk, mode="r") as f:
-        body = '\n'.join(f.readlines())
+        #read up to 100 lines
+        lines = f.readlines()
+        body = '\n'.join(lines[:MAX_LINES if len(lines)> MAX_LINES else len(lines)])
+        body += "\n[...]" if len(lines) > MAX_LINES else ""
+        
         
     return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body)
     

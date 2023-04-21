@@ -11,7 +11,7 @@
 <table class="process">
     <tr>
         <td>
-            <h2>File content</h2>
+            <h2>File content (top 100 lines)</h2>
             <div id="filebody" >{{filebody}}</div>
         </td>
         <td>
@@ -31,6 +31,21 @@
                     </tr>
                 </table>
                 
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h2>Preview thumbnail</h2>
+            <img src="/thumbnails/{{filename}}.png" class="thumbnail"/>
+        </td>
+        <td>
+            <h2>Preview actions</h2>
+            <table class="actions">
+                <tr>
+                    <td class="left"><button type="button" onClick="clickConfirm('action', 'regen_thumbnail', '');"><b>📐 Regenerate</b> the thumbnail</button></td>
+                    <td>In case it is missing or something happend, click the button to <strong>regenerate the thumbnail</strong> for this job.</td>
+                </tr>      
+            </table>
         </td>
     </tr>
 </table>
