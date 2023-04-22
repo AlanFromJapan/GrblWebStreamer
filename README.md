@@ -3,8 +3,8 @@ A simple python headless and web interface UI to stream GRBL to a Laser engraver
 
 Why? Because I don't want my laptop stuck to the laser all the time it burns. And because LightBurn is great but crashes EVERY TIME my Ubuntu locks screen (that hopefully will be fixed by them one day but until then). And because I find it fun to do (maybe mostly, ok).
 
-![Job processing](https://github.com/AlanFromJapan/grbl2image/blob/main/sample.gcode/Screenshot01.png?raw=true)
-
+![Job processing](https://github.com/AlanFromJapan/GrblWebStreamer/blob/main/sample.gcode/Screenshot01.png?raw=true)
+                  
 ## Inspirations
 If you want to do MORE than just stream a GRBL file on a raspi (nearly headless), there's many more complex options: 
  - Streamer script from GRBL https://github.com/gnea/grbl/blob/master/doc/script/stream.py
