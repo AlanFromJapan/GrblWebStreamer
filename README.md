@@ -3,6 +3,8 @@ A simple python headless and web interface UI to stream GRBL to a Laser engraver
 
 Why? Because I don't want my laptop stuck to the laser all the time it burns. And because LightBurn is great but crashes EVERY TIME my Ubuntu locks screen (that hopefully will be fixed by them one day but until then). And because I find it fun to do (maybe mostly, ok).
 
+![Job processing](https://github.com/AlanFromJapan/grbl2image/blob/main/sample.gcode/Screenshot01.png?raw=true)
+
 ## Inspirations
 If you want to do MORE than just stream a GRBL file on a raspi (nearly headless), there's many more complex options: 
  - Streamer script from GRBL https://github.com/gnea/grbl/blob/master/doc/script/stream.py
@@ -15,16 +17,17 @@ If you want to do MORE than just stream a GRBL file on a raspi (nearly headless)
  - Online GRBL simulator for playing https://nraynaud.github.io/webgcode/
  - GRBL commands list https://www.sainsmart.com/blogs/news/grbl-v1-1-quick-reference
 
-## Technical
+# Technical
 Runs on python3, dependencies:
  - Flask
  - pySerial
+ - [grbl2image](https://github.com/AlanFromJapan/grbl2image)
  - line-bot-sdk
  
 # Setup
 ## Basics
- - sudo apt install python3-pip
- - sudo python3 -m pip install -r requirements.txt
+ - `sudo apt install python3-pip`
+ - `sudo python3 -m pip install -r requirements.txt`
 
 We'll have it run with a power user account because this is **NOT MEANT** to be accessible from the net. If you do it, *make another account that is not sudoer* and use that one instead (make it part of *dialout* group to access serial). My power user will be "pi".
 
@@ -35,10 +38,14 @@ We'll have it run with a power user account because this is **NOT MEANT** to be 
 
 ## How to setup the Naver Line notifier
 Add in your config.py in the "notifiers" list member a member :
-        LineBotNotifier(
-            channelAccessToken="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
-            targetID="U123456abcd..."
-        )
+```python
+    LineBotNotifier(
+        #Generate the token in your Line developer channel (RTFM it's super straight forward)
+        channelAccessToken="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
+        #Your Unique user ID so the bot talks to you
+        targetID="U123456abcd..."
+    )
+```
 That you will find in your Line developer channel (see https://pypi.org/project/line-bot-sdk/).
 
 # G-code things to remember
