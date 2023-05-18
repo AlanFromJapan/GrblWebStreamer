@@ -26,6 +26,18 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+#Makes a thumnail for a GRBL file
+def genThumbnail(fileFullPath):
+    #try to make a thumbnail img
+    filename = secure_filename(os.path.basename(fileFullPath))
+    try:
+        grblUtils.createThumbnailForJob(fileFullPath)
+        flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
+    except Exception as ex:
+        flash(f'Failed creating thumbnail for [{escape(filename)}]', "error")
+        #TODO LOG
+        print ("error on making thumbnail: " + str(ex))
+
 
 ############################ App Events ###############################
 #push a message to say that flask is ready (so I get a notif via Line)
@@ -76,14 +88,7 @@ def upload_file():
             flash(f'Successfully uploaded file [{escape(filename)}]', "success")
 
             #try to make a thumbnail img
-            try:
-                grblUtils.createThumbnailForJob(os.path.join(config.myconfig['upload folder'], filename))
-                flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
-            except Exception as ex:
-                flash(f'Filed creating thumbnail for [{escape(filename)}]', "error")
-                #TODO LOG
-                print ("error on making thumbnail: " + str(ex))
-
+            genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
 
             return redirect(url_for('process_file', filename=filename))
         else:
@@ -105,13 +110,7 @@ def process_file(filename):
     if request.method == 'POST':
         if request.form["action"] == "regen_thumbnail":
             #try to (re)make a thumbnail img
-            try:
-                grblUtils.createThumbnailForJob(fileOnDisk)
-                flash(f'Successfully created thumbnail for [{escape(secure_filename(filename))}]', "success")
-            except Exception as ex:
-                flash(f'Filed creating thumbnail for [{escape(secure_filename(filename))}]', "error")
-                #TODO LOG
-                print ("error on making thumbnail: " + str(ex))
+            genThumbnail(fileOnDisk)
         else:
             # START A JOB 
             #start time
