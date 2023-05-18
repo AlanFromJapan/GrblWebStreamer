@@ -93,3 +93,8 @@ def createThumbnailForJob(fileFullPath:str):
 
     thumbnail = os.path.join("static", "thumbnails", os.path.basename(fileFullPath) + ".png")
     img.save(thumbnail)
+
+
+#Delete thumbnail
+def deleteThumbnailForJob(filename:str):
+    os.remove(os.path.join("static", "thumbnails", filename + ".png"))

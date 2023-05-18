@@ -11,7 +11,7 @@
 <table class="process">
     <tr>
         <td>
-            <h2>File content (top 100 lines)</h2>
+            <h2>File content (top 100 lines) (file is {{ filesize }}kB)</h2>
             <div id="filebody" >{{filebody}}</div>
         </td>
         <td>
@@ -26,11 +26,24 @@
                         <td>Runs the job but dynamically overlay the laser power to 1% (visible but not engraving)</td>
                     </tr>
                     <tr>
+                        <td colspan="2">
+                            <hr />
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="left"><button type="button" onClick="clickConfirm('action', 'burn', 'Are you sure? You won\' be able to stop it until the end.\r\nThis is FOR REAL with REAL LASER ON this time.');"><b>🔥 Burn</b> the job</button></td>
                         <td>Runs the job <strong>for real</strong> on the device</td>
                     </tr>
-                </table>
-                
+                    <tr>
+                        <td colspan="2">
+                            <hr />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="left"><button type="button" onClick="clickConfirm('action', 'deletefile', 'Sure you want to delete the file? You will have to reupload it.');"><b>🗑️ Delete</b> the file</button></td>
+                        <td>Deletes the file from disk.</td>
+                    </tr>
+                </table>            
         </td>
     </tr>
     <tr>

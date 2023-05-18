@@ -55,6 +55,7 @@ def flask_ready():
 #---------------------------------------------------------------------------------------
 #landing page
 @app.route('/')
+@app.route('/home')
 def homepage():
     # #not logged in? go away
     # if None == request.cookies.get('username'):
@@ -108,7 +109,17 @@ def process_file(filename):
 
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
-        if request.form["action"] == "regen_thumbnail":
+        if request.form["action"] == "deletefile":
+            #delete the file from disk
+            try:
+                grblUtils.deleteThumbnailForJob(filename)
+                os.remove(fileOnDisk)
+                flash(f'Successfully deleted file [{escape(filename)}]', "success")
+                return redirect("/")
+            except Exception as ex:
+                flash(f'Failed deleting file [{escape(filename)}]', "error")
+                print(f"ERROR while deleting file {filename} with message '{ex}'")
+        elif request.form["action"] == "regen_thumbnail":
             #try to (re)make a thumbnail img
             genThumbnail(fileOnDisk)
         else:
@@ -162,9 +173,10 @@ def process_file(filename):
         lines = f.readlines()
         body = '\n'.join(lines[:MAX_LINES if len(lines)> MAX_LINES else len(lines)])
         body += "\n[...]" if len(lines) > MAX_LINES else ""
+    
+    filesize = float(os.path.getsize(fileOnDisk)) / 1000.0
         
-        
-    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body)
+    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}")
     
 
 
