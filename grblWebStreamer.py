@@ -34,7 +34,7 @@ def genThumbnail(fileFullPath):
         grblUtils.createThumbnailForJob(fileFullPath)
         flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
     except Exception as ex:
-        flash(f'Failed creating thumbnail for [{escape(filename)}]', "error")
+        flash(f'Failed creating thumbnail for [{escape(filename)}] with message "{str(ex)}"', "error")
         #TODO LOG
         print ("error on making thumbnail: " + str(ex))
 
