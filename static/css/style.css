@@ -204,7 +204,7 @@ img.thumbnail{
 .replayBlockList {
     background-color: #202020;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
 
     padding: 10px;
 }
