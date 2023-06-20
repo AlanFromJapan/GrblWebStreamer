@@ -241,19 +241,30 @@ def device_page():
 @app.route('/replay')
 def replay_page():
     body = ''
+    content = ""
 
     #list of files
     l = [l for l in os.listdir(config.myconfig['upload folder']) if os.path.isfile(os.path.join(config.myconfig['upload folder'], l)) and l.lower()[-3:] == '.nc']
     #sorted ignorecase
     l = sorted(l, key=lambda x: str(x).lower())
 
-    for f in l:
-        body += f"<li><a href='/process-file/{ f }'>{ f }</a></li>"
-
-    body = """
+    body += """
 <h1>Recently uploaded files</h1>
-Click to (re)process uploaded files:
-<ul class="replaylist">""" + body + "</ul>"
+Click to (re)process uploaded files:"""
+
+    content = ""
+    for f in l:
+        content += f"""<div class='replayBlock'><a href='/process-file/{ f }'><img src='/thumbnails/{ f }.png'/><br/>{ f }</a></div>"""
+
+    body += "<div class='replayBlockList'>" +  content + "</div>"
+
+
+    content = ""
+    for f in l:
+        content += f"<li><a href='/process-file/{ f }'>{ f }</a></li>"
+    body += """<ul class="replaylist">""" + content + "</ul>"
+
+
     body += """<br/>
 Remember: go to the <a href="/">Home page</a> to upload a script!"""
 
