@@ -91,7 +91,9 @@ def createThumbnailForJob(fileFullPath:str):
     #final flip because the image 0,0 is top left and for us human it's at the bottom left
     img = img.transpose(Image.FLIP_TOP_BOTTOM)    
 
-    thumbnail = os.path.join("static", "thumbnails", os.path.basename(fileFullPath) + ".png")
+    #make sure it is saved in the subfolder of current file
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    thumbnail = os.path.join(dir_path, "static", "thumbnails", os.path.basename(fileFullPath) + ".png")
     img.save(thumbnail)
 
 
