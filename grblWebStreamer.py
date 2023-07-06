@@ -197,6 +197,10 @@ def device_page():
         elif request.form["action"] == "cmd":
             res = serialUtils.sendCommand(config.myconfig["device port"], request.form["cmd"] )
             flash(f"Sent command '{ request.form['cmd'] }', got response '{ res }'")
+        #Send Resume command
+        elif request.form["action"] == "resume":
+            res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_RESUME )
+            flash(f"Sent RESUME command (~), got response '{ res }'.\nCheck if device is in IDLE status now.")
         #Send status
         elif request.form["action"] == "status":
             res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_STATUS )
@@ -324,8 +328,14 @@ def logs_page():
 @app.route('/status')
 def status_ws():
     stat = ''
-    stat += 'Port: ' + config.myconfig["device port"] + "\n"
-    stat += 'Status: ' + serialUtils.serialStatus()
+    stat += f'Port: {config.myconfig["device port"]}\n'
+
+    connStatus = serialUtils.serialStatusEnum()
+    stat += f'Connection: {connStatus.name}\n'
+
+    state = grblUtils.getDeviceStatus()
+    stat += f'Device: {state}'
+
     return stat
 
 

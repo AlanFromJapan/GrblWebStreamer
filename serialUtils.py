@@ -10,6 +10,7 @@ BAUDRATE=115200
 #Wellknown commands
 CMD_STATUS = "?"
 CMD_GOTO_ORIGIN = "G0 X0Y0"
+CMD_RESUME = "~" #to resume after a HOLD state
 
 
 #THE connection and textual port name associated
@@ -17,12 +18,12 @@ __SERIAL = None
 __PORT = ''
 
 #The status of the device connected from Serial/GRBL PoV
-class DeviceStatus(Enum):
+class ConnectionStatus(Enum):
     NOT_CONNECTED = auto()
     READY = auto()
     BUSY = auto()
     ERROR = auto()
-__STATUS = DeviceStatus.NOT_CONNECTED
+__STATUS = ConnectionStatus.NOT_CONNECTED
 
 
 ##############################################################################################################################
@@ -46,7 +47,7 @@ def connect(port, forceDisconnect = False):
     if __PORT != '' or __SERIAL != None:        
         #first DIS-connect
 
-        if __STATUS in [DeviceStatus.BUSY] and not forceDisconnect:
+        if __STATUS in [ConnectionStatus.BUSY] and not forceDisconnect:
             raise Exception ("Status error: device is busy, cannot disconnect (try force).")
 
         disconnect()
@@ -60,7 +61,7 @@ def connect(port, forceDisconnect = False):
     __SERIAL.flushInput()
 
     #set status
-    __STATUS = DeviceStatus.READY
+    __STATUS = ConnectionStatus.READY
 
 
 
@@ -76,7 +77,7 @@ def disconnect():
     
     __SERIAL = None
     __PORT = ''
-    __STATUS = DeviceStatus.NOT_CONNECTED
+    __STATUS = ConnectionStatus.NOT_CONNECTED
 
 
 
@@ -85,7 +86,7 @@ def disconnect():
 def sendCommand (port, cmd:str) -> str:
     global __SERIAL, __STATUS
 
-    if __STATUS in [DeviceStatus.BUSY]:
+    if __STATUS in [ConnectionStatus.BUSY]:
         #allow for error, contrary to send file so you can "unstuck" the device with a magic command ... maybe.
         raise Exception ("Status error: device is busy, cannot send a command.")
 
@@ -93,7 +94,7 @@ def sendCommand (port, cmd:str) -> str:
         connect(port)
 
         #update status
-        __STATUS = DeviceStatus.BUSY
+        __STATUS = ConnectionStatus.BUSY
 
         #send
         __SERIAL.write(str.encode(cmd + '\n'))
@@ -107,13 +108,13 @@ def sendCommand (port, cmd:str) -> str:
                 break
 
         #update status
-        __STATUS = DeviceStatus.READY
+        __STATUS = ConnectionStatus.READY
 
         return res
     except Exception as ex:
         print ("EXCEPT on sendCommand: " + str(ex))
         #update status
-        __STATUS = DeviceStatus.ERROR
+        __STATUS = ConnectionStatus.ERROR
 
 
 #line modifier : set comments to None
@@ -136,7 +137,7 @@ def __linemodifier_laserMinimum(l:str) -> str:
 def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_skipComments]):
     global __SERIAL, __STATUS
 
-    if __STATUS in [DeviceStatus.BUSY, DeviceStatus.ERROR]:
+    if __STATUS in [ConnectionStatus.BUSY, ConnectionStatus.ERROR]:
         raise Exception ("Status error: device is busy or in error, cannot start a new job.")
 
     try:
@@ -144,12 +145,12 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
     except Exception as ex:
         print("Error at connection : " + str(ex))
         #update status
-        __STATUS = DeviceStatus.NOT_CONNECTED
+        __STATUS = ConnectionStatus.NOT_CONNECTED
         raise Exception("Failed to connect to device - see logs")
 
     try:
         #update status
-        __STATUS = DeviceStatus.BUSY
+        __STATUS = ConnectionStatus.BUSY
 
         with open(fileFullPath, "r") as f:
             for line in f:
@@ -171,12 +172,12 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
                     #TODO LOG
                     print(f"{line.strip()} ==> {l.strip()} ==? {str(grbl_out).strip()}")
         #update status
-        __STATUS = DeviceStatus.READY
+        __STATUS = ConnectionStatus.READY
 
     except Exception as ex:
         print("Exception processing file : " + str(ex))
         #update status
-        __STATUS = DeviceStatus.ERROR
+        __STATUS = ConnectionStatus.ERROR
 
         raise ex
 
@@ -187,6 +188,9 @@ def simulateFile(port:str, fileFullPath:str):
 
 
 #returns serial status
-def serialStatus():
+def serialStatusEnum():
     global __SERIAL, __PORT, __STATUS
-    return "Not connected" if __SERIAL == None or __PORT == '' else f"Connected ({ __STATUS.name })"
+    return ConnectionStatus.NOT_CONNECTED if __SERIAL == None or __PORT == '' else __STATUS
+
+
+

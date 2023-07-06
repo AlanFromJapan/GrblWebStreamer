@@ -29,7 +29,9 @@ function updateCurrentStatus(){
     xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
             var d = document.getElementById('currentstatus');
-            d.innerHTML = this.responseText.replace('\n', '<br/>');
+            //you got to love JS to use it. I don't.
+            const regex = /\n/g;
+            d.innerHTML = this.responseText.replace(regex, '<br/>');
             }
     };
     xhttp.open("GET", "/status", true);

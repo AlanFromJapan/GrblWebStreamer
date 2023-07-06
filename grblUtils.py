@@ -8,6 +8,7 @@ import grbl2image.grbl2image as G2I
 from PIL import Image
 
 REGEX_LIGHTBURN_BOUNDS=";\s+Bounds: X([0-9\.]+) Y([0-9\.]+) to X([0-9\.]+) Y([0-9\.]+)"
+REGEX_DEVICE_STATUS = "<(?P<state>[^:|]+)(?::||).*"
 
 #Try to extract the wellknown comment about boundaries to get the frame details.
 #Ok it's ugly and risky but hey it's here so no need to redo what was done by professionals
@@ -100,3 +101,20 @@ def createThumbnailForJob(fileFullPath:str):
 #Delete thumbnail
 def deleteThumbnailForJob(filename:str):
     os.remove(os.path.join("static", "thumbnails", filename + ".png"))
+
+
+#Returns the DEVICE status (Idle, Hold, ...)
+def getDeviceStatus():
+    deviceStatus = serialUtils.serialStatusEnum()
+
+    if deviceStatus == serialUtils.ConnectionStatus.READY:
+        #device is not communicating but ready to receive order
+        res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_STATUS )
+        m = re.search(REGEX_DEVICE_STATUS, res)
+        if m != None:
+            return m.group("state")
+        else:
+            #Shouldn't happen but just in case
+            return "Unknown"            
+    else:
+        return "Not Ready or Busy?"
