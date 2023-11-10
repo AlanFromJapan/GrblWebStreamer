@@ -1,11 +1,11 @@
 #!/bin/bash
 
 here=`dirname $0`
-logdir="/tmp/"
+logdir="/var/local/GrblWebStreamer/logs"
 
-echo Restart initiated at `date` > "$logdir"ipcampy_restart_latest.log
-echo ***STOP*** >> "$logdir"ipcampy_restart_latest.log
-$here/stop-service.sh >> "$logdir"ipcampy_restart_latest.log 2>&1
-echo ***START*** >> "$logdir"ipcampy_restart_latest.log
-$here/start-service.sh >> "$logdir"ipcampy_restart_latest.log 2>&1
-echo Restart completed at `date` >> "$logdir"ipcampy_restart_latest.log
+echo Restart initiated at `date` > "$logdir"restart_log.log
+echo ***STOP*** >> "$logdir"restart_log.log
+$here/stop-service.sh >> "$logdir"restart_log.log 2>&1
+echo ***START*** >> "$logdir"restart_log.log
+$here/start-service.sh >> "$logdir"restart_log.log 2>&1
+echo Restart completed at `date` >> "$logdir"restart_log.log

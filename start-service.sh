@@ -1,7 +1,7 @@
 #!/bin/bash
 
 here=`dirname $0`
-logdir="/var/local/GrblWebStreamer.files/logs"
+logdir="/var/local/GrblWebStreamer/logs"
 
 sudo -u pi -s nohup $here/run.sh > $logdir/grblWebStreamer.log 2>&1 &
 

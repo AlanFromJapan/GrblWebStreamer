@@ -19,15 +19,31 @@ If you want to do MORE than just stream a GRBL file on a raspi (nearly headless)
 
 # Technical
 Runs on python3, dependencies:
- - Flask
- - pySerial
+ - Flask (installed as OS package on Raspberry Pi)
+ - pySerial (installed as OS package on Raspberry Pi)
  - [grbl2image](https://github.com/AlanFromJapan/grbl2image)
  - line-bot-sdk
  
 # Setup
 ## Basics
- - `sudo apt install python3-pip`
- - `sudo python3 -m pip install -r requirements.txt`
+Run the **install-script.sh** but this is what it should do:
+```bash
+sudo apt install git python3 python3-pip python3-venv libopenjp2-7 --yes
+sudo apt install python3-flask python3-serial --yes
+
+mkdir GrblWebStreamer.venv
+cd GrblWebStreamer.venv
+git clone https://github.com/AlanFromJapan/GrblWebStreamer.git
+python3 -m venv --system-site-packages .
+source bin/activate
+python -m pip install -r ./GrblWebStreamer/requirements.txt
+
+sudo mkdir -p /var/local/GrblWebStreamer/logs
+sudo mkdir -p /var/local/GrblWebStreamer/uploads
+sudo chgrp -R pi /var/local/GrblWebStreamer
+sudo chmod -R g+rw /var/local/GrblWebStreamer
+
+```
 
 We'll have it run with a power user account because this is **NOT MEANT** to be accessible from the net. If you do it, *make another account that is not sudoer* and use that one instead (make it part of *dialout* group to access serial). My power user will be "pi".
 

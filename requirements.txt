@@ -1,5 +1,3 @@
-flask
-pySerial
 grbl2image
 line-bot-sdk
 
