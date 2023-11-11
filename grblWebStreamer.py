@@ -7,13 +7,18 @@ from flask import Flask, flash, request, send_file, render_template, abort, redi
 from datetime import datetime, timedelta
 import sys
 import os
-import time
+import logging
 
 from werkzeug.utils import secure_filename
 import socket
 
 from werkzeug.serving import get_interface_ip
 from markupsafe import escape
+
+############################ BEFORE ANYTHING ELSE #################################
+#logging
+logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.get("log level", logging.INFO))
+logging.info("Starting app")
 
 ############################ FLASK VARS #################################
 app = Flask(__name__, static_url_path='')
@@ -35,8 +40,8 @@ def genThumbnail(fileFullPath):
         flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
     except Exception as ex:
         flash(f'Failed creating thumbnail for [{escape(filename)}] with message "{str(ex)}"', "error")
-        #TODO LOG
-        print ("error on making thumbnail: " + str(ex))
+
+        logging.error ("error on making thumbnail: " + str(ex))
 
 
 ############################ App Events ###############################
@@ -118,7 +123,7 @@ def process_file(filename):
                 return redirect("/")
             except Exception as ex:
                 flash(f'Failed deleting file [{escape(filename)}]', "error")
-                print(f"ERROR while deleting file {filename} with message '{ex}'")
+                logging.error(f"ERROR while deleting file {filename} with message '{ex}'")
         elif request.form["action"] == "regen_thumbnail":
             #try to (re)make a thumbnail img
             genThumbnail(fileOnDisk)
@@ -360,11 +365,11 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
         #run as HTTPS?
         if len(sys.argv) == 3:
             #go HTTPS
-            print("INFO: start as HTTPSSSSSSSSSSS")
+            logging.info("start as HTTPSSSSSSSSSSS")
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True, ssl_context=(sys.argv[1], sys.argv[2]))
         else:
             #not secured HTTP
-            print("INFO: start as HTTP unsecured")
+            logging.info("start as HTTP unsecured")
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
 
     finally:

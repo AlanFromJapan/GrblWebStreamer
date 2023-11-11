@@ -1,8 +1,9 @@
 from  notifiers.baseNotifier import BaseNotifier, FlashNotifier
+import logging
 
 myconfig = {
     "isProd" : False,
-    "app_port" : 56554,
+    "app_port" : 12380,
     "upload folder" : "/tmp",
     "secret_key" : "whatever you want!!",
     "notif on startup" : True,
@@ -11,5 +12,7 @@ myconfig = {
 
     "logfile" : "/tmp/grblLogs.log",
 
-    "notifiers" : [ BaseNotifier(), FlashNotifier() ]
+    "notifiers" : [ BaseNotifier(), FlashNotifier() ],
+
+    "log level" : logging.DEBUG
 }

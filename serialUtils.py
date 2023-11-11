@@ -3,6 +3,8 @@ import serial.tools.list_ports
 import time
 import re
 from enum import Enum, auto
+import config
+import logging
 
 #GRBL so assume it constant
 BAUDRATE=115200
@@ -48,6 +50,7 @@ def connect(port, forceDisconnect = False):
         #first DIS-connect
 
         if __STATUS in [ConnectionStatus.BUSY] and not forceDisconnect:
+            logging.error("Status error: device is busy, cannot disconnect (try force).")
             raise Exception ("Status error: device is busy, cannot disconnect (try force).")
 
         disconnect()
@@ -72,8 +75,7 @@ def disconnect():
     try:
         __SERIAL.close()
     except Exception as ex:
-        #TODO LOG!
-        print("EXCEPT on disconnect:" + str(ex))
+        logging.error("EXCEPT on disconnect:" + str(ex))
     
     __SERIAL = None
     __PORT = ''
@@ -88,6 +90,7 @@ def sendCommand (port, cmd:str) -> str:
 
     if __STATUS in [ConnectionStatus.BUSY]:
         #allow for error, contrary to send file so you can "unstuck" the device with a magic command ... maybe.
+        logging.error("Status error: device is busy, cannot send a command.")
         raise Exception ("Status error: device is busy, cannot send a command.")
 
     try:
@@ -112,7 +115,7 @@ def sendCommand (port, cmd:str) -> str:
 
         return res
     except Exception as ex:
-        print ("EXCEPT on sendCommand: " + str(ex))
+        logging.error ("EXCEPT on sendCommand: " + str(ex))
         #update status
         __STATUS = ConnectionStatus.ERROR
 
@@ -138,12 +141,13 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
     global __SERIAL, __STATUS
 
     if __STATUS in [ConnectionStatus.BUSY, ConnectionStatus.ERROR]:
+        logging.error("Status error: device is busy or in error, cannot start a new job.")
         raise Exception ("Status error: device is busy or in error, cannot start a new job.")
 
     try:
         connect(port)
     except Exception as ex:
-        print("Error at connection : " + str(ex))
+        logging.error("Error at connection : " + str(ex))
         #update status
         __STATUS = ConnectionStatus.NOT_CONNECTED
         raise Exception("Failed to connect to device - see logs")
@@ -169,13 +173,12 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
 
                     #TODO check for the answer to be "ok" and if not handle it
 
-                    #TODO LOG
-                    print(f"{line.strip()} ==> {l.strip()} ==? {str(grbl_out).strip()}")
+                    logging.debug(f"{line.strip()} ==> {l.strip()} ==? {str(grbl_out).strip()}")
         #update status
         __STATUS = ConnectionStatus.READY
 
     except Exception as ex:
-        print("Exception processing file : " + str(ex))
+        logging.error("Exception processing file : " + str(ex))
         #update status
         __STATUS = ConnectionStatus.ERROR
 
