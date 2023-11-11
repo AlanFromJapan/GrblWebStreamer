@@ -53,6 +53,32 @@ echo "edit /etc/rc.local and add the following line before the exit 0:"
 echo "/home/pi/GrblWebStreamer.venv/bin/python /home/pi/GrblWebStreamer.venv/GrblWebStreamer/start-service.sh &"
 read -n1 -s -r -p $'Press any key to continue ...\n' key
 
+
+echo "#################################################################"
+echo "Should be all good but I will add port mapping (http -> your port assuming it's 12380)"
+echo ""
+echo ">> if you don't want that, Ctrl+C now, the following is optional"
+echo "#################################################################"
+
+read -p "Do you want to proceed with port mapping? (yes/no) " yn
+
+case $yn in 
+	yes ) echo ok, we will proceed;;
+	no ) echo exiting...;
+		exit;;
+	* ) echo invalid response;
+		exit 1;;
+esac
+
+
+sudo apt install iptables --yes
+
+#All TCP traffic from all interfaces from outside to port 80 redirected to 12380
+sudo iptables -A PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-port 12380
+
+#doing like that so you use the "save on install" feature of iptables-persistent
+sudo apt install  iptables-persistent --yes
+
 echo "#################################################################"
 echo "That should be finished, reboot and cross your fingers..."
 

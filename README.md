@@ -50,6 +50,7 @@ We'll have it run with a power user account because this is **NOT MEANT** to be 
 ## Configuration
  - Copy config.sample.py to config.py and customize at will
  - Make it start at start-up: edit */etc/rc.local* and add `/path/to/installation/GrblWebStreamer/start-service.sh`
+ - Add port mapping rules to access from port 80 (see the install script)
  - Reboot and test
 
 ## How to setup the Naver Line notifier
