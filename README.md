@@ -26,16 +26,24 @@ Runs on python3, dependencies:
  
 # Setup
 ## Basics
-Run the **install-script.sh** but this is what it should do:
+Run the **install-script.sh** but this is what it should do👇
+
+Notes:
+- Raspbian bookworm (late 2023) doesn't like pip packages installed globally, so you have to either use the .deb with your precompiled lib (recommended) or make a venv and get that lib
+- Because of the above, flask if installed via venv comes with dependency on Rust and Cargo to be built and installed (space and time wasted)... just pick the .deb instead
+
 ```bash
 sudo apt install git python3 python3-pip python3-venv libopenjp2-7 --yes
+#getting python libs as prebuilt debian packages
 sudo apt install python3-flask python3-serial --yes
 
 mkdir GrblWebStreamer.venv
 cd GrblWebStreamer.venv
 git clone https://github.com/AlanFromJapan/GrblWebStreamer.git
+#don't forget the --system-site-packages to get access to globally installed packages (flask & pySerial)
 python3 -m venv --system-site-packages .
 source bin/activate
+#get via pip only the non-prebuilt packages
 python -m pip install -r ./GrblWebStreamer/requirements.txt
 
 sudo mkdir -p /var/local/GrblWebStreamer/logs
