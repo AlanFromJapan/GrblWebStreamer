@@ -1,7 +1,10 @@
-import os
 import serialUtils
 import grblUtils
+import config
+import threading
+from  notifiers.baseNotifier import Job
 
+import logging
 from enum import Enum
 
 class DeviceStatus(Enum):
@@ -18,7 +21,7 @@ class WellKnownCommands(Enum):
     CMD_RESUME = "~" #to resume after a HOLD state
 
 
-
+# Methods are sync unless stated otherwise
 class Device:
     port: str = None
     status = DeviceStatus.NOT_FOUND
@@ -28,22 +31,66 @@ class Device:
         self.port = port
 
 
-    def simulate (self, fileOnDisk):
+    def __notifyAll (self, job : Job):
+        if job is not None:
+            #notify
+            for x in config.myconfig["notifiers"]: 
+                try:
+                    x.NotifyJobCompletion(job)
+                except Exception as ex:
+                    #fail silently
+                    logging.warning(f"Failed to notify job {job} completion {x} with message {ex}")
+
+
+    def __completeJob (self, job : Job):
+        self.status = DeviceStatus.IDLE
+        if job is not None:
+            job.finish()
+            self.__notifyAll(job)
+
+    #-------------------------------------------------------------
+    def simulate (self, fileOnDisk, asynchronous = False, job : Job = None):
         self.status = DeviceStatus.BUSY
+        if asynchronous: 
+            threading.Thread(target=self.__simulateAsync, args=(fileOnDisk, job, )).start()   
+        else:   
+            self.__simulateAsync(fileOnDisk, job)
+
+    def __simulateAsync (self, fileOnDisk, job : Job = None):
         serialUtils.simulateFile(self.port, fileOnDisk)
-        self.status = DeviceStatus.IDLE
+        self.__completeJob(job)
 
 
-    def burn (self, fileOnDisk):
+    #-------------------------------------------------------------
+    def burn (self, fileOnDisk, asynchronous = False, job : Job = None):
         self.status = DeviceStatus.BUSY
+        if asynchronous:
+            threading.Thread(target=self.__burnAsync, args=(fileOnDisk, job, )).start()
+        else:
+            self.__burnAsync(fileOnDisk, job)
+    
+    def __burnAsync (self, fileOnDisk, job : Job = None):
         serialUtils.processFile(self.port, fileOnDisk)
-        self.status = DeviceStatus.IDLE
+        self.__completeJob(job)
 
 
-    def frame(self, fileOnDisk):
+
+
+
+    #-------------------------------------------------------------
+    def frame(self, fileOnDisk, asynchronous = False, job : Job = None):
         self.status = DeviceStatus.BUSY
+        if asynchronous:
+            threading.Thread(target=self.__frameAsync, args=(fileOnDisk,job, )).start()
+        else:
+            self.__frameAsync(fileOnDisk, job)
+
+    def __frameAsync(self, fileOnDisk, job : Job = None):
         grblUtils.generateFrame(self.port, fileOnDisk)
-        self.status = DeviceStatus.IDLE
+        self.__completeJob(job)
+
+
+    #-------------------------------------------------------------
 
 
     # send command to device and returns result
@@ -54,12 +101,14 @@ class Device:
         return res
     
 
+    #-------------------------------------------------------------
     def disconnect(self):
         self.status = DeviceStatus.BUSY
         serialUtils.disconnect()
         self.status = DeviceStatus.NOT_FOUND
 
 
+    #-------------------------------------------------------------
     def reconnect(self, port) -> DeviceStatus:
         self.disconnect()
 

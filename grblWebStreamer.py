@@ -160,28 +160,20 @@ def process_file(filename):
             try:
                 if request.form["action"] == "simulate":
                     #do the job but with no laser power
-                    D.simulate(fileOnDisk)
-                    j.finish()
+                    D.simulate(fileOnDisk, asynchronous=True, job = j)
 
-                    #notify
-                    for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
                 elif request.form["action"] == "burn":
                     #the real thing
-                    D.burn(fileOnDisk)
-                    j.finish()
+                    D.burn(fileOnDisk, asynchronous=True, job = j)
                     
-                    #notify
-                    for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
                 elif request.form["action"] == "frame":
-                    #frame the workspace
-                    D.frame(fileOnDisk)
-                    j.finish()
+                    #frame the workspace SYNCHRONOUSLY
+                    D.frame(fileOnDisk, asynchronous=True, job = j)
                     
-                    #notify
-                    for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
                 else:
                     flash("Unknow or TODO implement", "error")
             except Exception as ex:
+                logging.error(f"ERROR while processing file {filename} with message '{ex}'")    
                 #notify
                 for x in config.myconfig["notifiers"]: x.NotifyJobError(j, extra=str(ex))
 
