@@ -20,6 +20,8 @@ from markupsafe import escape
 logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.get("log level", logging.INFO))
 logging.info("Starting app")
 
+latest_file = None
+
 ############################ FLASK VARS #################################
 app = Flask(__name__, static_url_path='')
 app.secret_key = config.myconfig["secret_key"]
@@ -61,17 +63,21 @@ def flask_ready():
 #landing page
 @app.route('/')
 @app.route('/home')
-def homepage():
+def homepage():    
+    global latest_file
+
     # #not logged in? go away
     # if None == request.cookies.get('username'):
     #     return redirect("login")
-    return render_template("home01.html", pagename="Home")
+    return render_template("home01.html", pagename="Home", latest=latest_file)
 
 
 #---------------------------------------------------------------------------------------
 #handler for file upload that redirect to file process (not a page)
 @app.route('/upload-file', methods=['POST'])
-def upload_file():
+def upload_file():    
+    global latest_file
+        
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -96,7 +102,7 @@ def upload_file():
             #try to make a thumbnail img
             genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
 
-            return redirect(url_for('process_file', filename=filename))
+            return redirect(url_for('process_file', filename=filename), latest=latest_file)
         else:
 
             flash(f"Forbidden file extension, use one of {ALLOWED_EXTENSIONS}", "error")
@@ -109,8 +115,13 @@ def upload_file():
 #---------------------------------------------------------------------------------------
 #The "main" page to process a file
 @app.route('/process-file/<filename>', methods=['GET','POST'])
-def process_file(filename):
+def process_file(filename):    
+    global latest_file
+    
     fileOnDisk = os.path.join(config.myconfig['upload folder'], secure_filename(filename))
+
+    #remember latest
+    latest_file = filename
 
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
@@ -120,6 +131,7 @@ def process_file(filename):
                 grblUtils.deleteThumbnailForJob(filename)
                 os.remove(fileOnDisk)
                 flash(f'Successfully deleted file [{escape(filename)}]', "success")
+                latest_file = None
                 return redirect("/")
             except Exception as ex:
                 flash(f'Failed deleting file [{escape(filename)}]', "error")
@@ -181,7 +193,7 @@ def process_file(filename):
     
     filesize = float(os.path.getsize(fileOnDisk)) / 1000.0
         
-    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}")
+    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=latest_file)
     
 
 
@@ -189,7 +201,9 @@ def process_file(filename):
 #---------------------------------------------------------------------------------------
 #The page to play with the device
 @app.route('/device', methods=['GET','POST'])
-def device_page():
+def device_page():    
+    global latest_file
+    
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
         # Change port
@@ -241,14 +255,16 @@ def device_page():
 
     body = """<ul>""" + body + "</ul>"
 
-    return render_template("device01.html", pagename="Device", settings=body, ports=ports)
+    return render_template("device01.html", pagename="Device", settings=body, ports=ports, latest=latest_file)
 
 
 
 #---------------------------------------------------------------------------------------
 #List the recently sent files
 @app.route('/replay')
-def replay_page():
+def replay_page():    
+    global latest_file
+    
     body = ''
     content = ""
 
@@ -277,7 +293,7 @@ Click to (re)process uploaded files:"""
     body += """<br/>
 Remember: go to the <a href="/">Home page</a> to upload a script!"""
 
-    return render_template("template01.html", pagename="Replay", pagecontent=body)
+    return render_template("template01.html", pagename="Replay", pagecontent=body, latest=latest_file)
     
 
 
@@ -285,7 +301,9 @@ Remember: go to the <a href="/">Home page</a> to upload a script!"""
 #---------------------------------------------------------------------------------------
 #The page to turn off the PC
 @app.route('/OS', methods=['GET','POST'])
-def os_page():
+def os_page():    
+    global latest_file
+    
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
         # Shutdown
@@ -299,7 +317,7 @@ def os_page():
         else:
             flash("Unknow or TODO implement", "error")    
     
-    return render_template("os01.html", pagename="OS")
+    return render_template("os01.html", pagename="OS", latest=latest_file)
 
 
 
@@ -308,7 +326,9 @@ def os_page():
 #---------------------------------------------------------------------------------------
 #Shows the log file
 @app.route('/logs')
-def logs_page():
+def logs_page():    
+    global latest_file
+    
     body = f"""
 <h1>Logs</h1>
 <p>File is at <code>{ config.myconfig["logfile"] }</code>:</p>
@@ -323,7 +343,7 @@ def logs_page():
 
     body += "</pre>"
 
-    return render_template("template01.html", pagename="Logs", pagecontent=body)
+    return render_template("template01.html", pagename="Logs", pagecontent=body, latest=latest_file)
     
 
 

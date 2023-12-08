@@ -10,11 +10,13 @@
 
 <table class="header">
   <tr>
-    <td><a href="/">Home</a></td>
-    <td><a href="/device">Device</a></td>
-    <td><a href="/replay">Replay</a></td>
-    <td><a href="/OS">OS</a></td>
-    <td><a href="/logs">Logs</a></td>
+    <td><a href="/">🏠 Home</a></td>
+    <td><a href="/device">🔫 Device</a></td>
+    <td><a href="/replay">🔂 Replay</a></td>
+    {% if latest %}
+    <td><a href="/process-file/{{latest}}">🔥 Latest</a></td>
+    {% endif %}
+    <td><a href="/OS">⚙️ Admin</a></td>
     <td><div id="currentstatus"></div></td>
   </tr>
 </table>
