@@ -101,6 +101,28 @@ LI.flashitem_success {
     height:50px;
     font-size: x-small;
 }
+
+/* Pulsating effect, kudos to https://www.kevinleary.net/blog/pulsating-css3-animations/ */
+.pulsate {
+    -webkit-animation: pulsate 3s ease-out;
+    -webkit-animation-iteration-count: infinite; 
+    opacity: 0.5;
+}
+@-webkit-keyframes pulsate {
+    0% { 
+        opacity: 0.5;
+        color:gainsboro;
+    }
+    50% { 
+        opacity: 1.0;
+        color:gold;
+    }
+    100% { 
+        opacity: 0.5;
+        color:gainsboro;
+    }
+}
+
 /* **************************************************************************************************************** */
 /* Home page*/
 
