@@ -2,6 +2,7 @@ import config
 import serialUtils
 import grblUtils
 from  notifiers.baseNotifier import Job, JobType
+import device
 
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
 from datetime import datetime, timedelta
@@ -21,6 +22,7 @@ logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.g
 logging.info("Starting app")
 
 latest_file = None
+D = device.Device(config.myconfig["device port"])
 
 ############################ FLASK VARS #################################
 app = Flask(__name__, static_url_path='')
@@ -158,21 +160,21 @@ def process_file(filename):
             try:
                 if request.form["action"] == "simulate":
                     #do the job but with no laser power
-                    serialUtils.simulateFile(config.myconfig["device port"], fileOnDisk)
+                    D.simulate(fileOnDisk)
                     j.finish()
 
                     #notify
                     for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
                 elif request.form["action"] == "burn":
                     #the real thing
-                    serialUtils.processFile(config.myconfig["device port"], fileOnDisk)
+                    D.burn(fileOnDisk)
                     j.finish()
                     
                     #notify
                     for x in config.myconfig["notifiers"]: x.NotifyJobCompletion(j)
                 elif request.form["action"] == "frame":
                     #frame the workspace
-                    grblUtils.generateFrame(fileOnDisk)
+                    D.frame(fileOnDisk)
                     j.finish()
                     
                     #notify
@@ -210,35 +212,35 @@ def device_page():
         if request.form["action"] == "change-port":
             p = request.form["newtarget"]
             p = p[:p.index(" ")]
-            config.myconfig["device port"] = p
+            D.reconnect(p)
             flash(f"Updated in use target serial port to '{p}'.", "success")
         #Send command
         elif request.form["action"] == "cmd":
-            res = serialUtils.sendCommand(config.myconfig["device port"], request.form["cmd"] )
+            res = D.sendCommand(request.form["cmd"] )
             flash(f"Sent command '{ request.form['cmd'] }', got response '{ res }'")
         #Send Resume command
         elif request.form["action"] == "resume":
-            res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_RESUME )
+            res = D.sendCommand(device.WellKnownCommands.CMD_RESUME.value )
             flash(f"Sent RESUME command (~), got response '{ res }'.\nCheck if device is in IDLE status now.")
         #Send status
         elif request.form["action"] == "status":
-            res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_STATUS )
-            flash(f"Sent command '{ serialUtils.CMD_STATUS }', got response '{ res }'")
+            res = D.sendCommand(device.WellKnownCommands.CMD_STATUS.value )
+            flash(f"Sent command '{ device.WellKnownCommands.CMD_STATUS.name }', got response '{ res }'")
         #Send goto orign
         elif request.form["action"] == "goto-origin":
-            res = serialUtils.sendCommand(config.myconfig["device port"], serialUtils.CMD_GOTO_ORIGIN )
-            flash(f"Sent command '{ serialUtils.CMD_GOTO_ORIGIN }', got response '{ res }'")
+            res = D.sendCommand(device.WellKnownCommands.CMD_GOTO_ORIGIN.value )
+            flash(f"Sent command '{ device.WellKnownCommands.CMD_GOTO_ORIGIN.name }', got response '{ res }'")
         #Disconnect
         elif request.form["action"] == "disconnect":
-            serialUtils.disconnect()
-            flash(f"Disconnected from '{ config.myconfig['device port'] }'", "success")
+            D.disconnect()
+            flash(f"Disconnected from '{ D.port }'", "success")
         else:
             flash("Unknow or TODO implement", "error")
 
     #Page generation
     body = ''
 
-    body += f'<li>Current target Serial port: { config.myconfig["device port"] }</li>'
+    body += f'<li>Current target Serial port: { D.port }</li>'
 
     ports = serialUtils.listAvailableSerialPorts() 
     if len(ports) > 0:
@@ -248,7 +250,7 @@ def device_page():
 
         body += "</ul>"
 
-        if not config.myconfig["device port"] in [p[:p.index(" ")] for p in ports]:
+        if not D.port in [p[:p.index(" ")] for p in ports]:
             flash("Target port is not available: change the port or check connections.", "error")    
     else:
         flash("No opened serial port found. Is laser/CNC connected?", "error")
@@ -353,13 +355,10 @@ def logs_page():
 @app.route('/status')
 def status_ws():
     stat = ''
-    stat += f'Port: {config.myconfig["device port"]}\n'
+    stat += f'Port: {D.port}\n'
 
-    connStatus = serialUtils.serialStatusEnum()
-    stat += f'Connection: {connStatus.name}\n'
-
-    state = grblUtils.getDeviceStatus()
-    stat += f'Device: {state}'
+    state = D.status
+    stat += f'Device: {state.name}'
 
     return stat
 

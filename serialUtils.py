@@ -9,11 +9,6 @@ import logging
 #GRBL so assume it constant
 BAUDRATE=115200
 
-#Wellknown commands
-CMD_STATUS = "?"
-CMD_GOTO_ORIGIN = "G0 X0Y0"
-CMD_RESUME = "~" #to resume after a HOLD state
-
 
 #THE connection and textual port name associated
 __SERIAL = None

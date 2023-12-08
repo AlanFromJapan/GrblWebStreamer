@@ -27,7 +27,7 @@ def __getFrameFromComments (fileFullPath):
 
 
 #Attempts to frame tne file content (just more around where the action will be)
-def generateFrame(fileFullPath):
+def generateFrame(port, fileFullPath):
     fromto = __getFrameFromComments(fileFullPath)
 
     logging.info (f"Extracted from file: { str(fromto) }")
@@ -74,7 +74,7 @@ M2
         
         
         #not taking risks
-        serialUtils.simulateFile(config.myconfig["device port"], tempfile)
+        serialUtils.simulateFile(port, tempfile)
     finally:
         try:
             os.remove(tempfile)

@@ -44,7 +44,15 @@
 <div class="footer">Made by AlanFromJapan (started March2023) ~ MIT License ~ <a href="https://github.com/AlanFromJapan/GrblWebStreamer" target="_blank">Source code on GitHub</a></div>
 <script type="text/javascript">
 
-  updateCurrentStatus();
+//do it once...
+updateCurrentStatus();
+
+//and then every second or so
+const interval = setInterval(function() {
+   // method to be executed;
+   updateCurrentStatus();
+ }, 1000);
+  
 
 </script>
 </body>
