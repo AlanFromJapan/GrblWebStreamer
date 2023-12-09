@@ -20,6 +20,7 @@ function clickConfirm(pname, pvalue, pmessage="Sure ?") {
 }
 
 
+var latestStatus = null;
 
 //Updates the STATUS box
 function updateCurrentStatus(){
@@ -31,7 +32,8 @@ function updateCurrentStatus(){
             var d = document.getElementById('currentstatus');
             //you got to love JS to use it. I don't.
             const regex = /\n/g;
-            d.innerHTML = this.responseText.replace(regex, '<br/>');
+            latestStatus = JSON.parse(this.responseText);
+            d.innerHTML = `<b>Current Status:</b>&nbsp;${latestStatus.status}<br/><b>Port:</b>&nbsp;${latestStatus.port}`
             }
     };
     xhttp.open("GET", "/status", true);

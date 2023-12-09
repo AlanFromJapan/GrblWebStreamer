@@ -97,7 +97,10 @@ class Device:
     def sendCommand(self, command) -> str:
         self.status = DeviceStatus.BUSY
         res = serialUtils.sendCommand(self.port, command)
-        self.status = DeviceStatus.IDLE
+        if res is not None:
+            self.status = DeviceStatus.IDLE
+        else:
+            self.status = DeviceStatus.ERROR
         return res
     
 
@@ -118,6 +121,6 @@ class Device:
             serialUtils.connect(self.port)
             self.status = DeviceStatus.IDLE
         except:
-            self.status = DeviceStatus.NOT_FOUND
+            self.status = DeviceStatus.ERROR
         
         return self.status

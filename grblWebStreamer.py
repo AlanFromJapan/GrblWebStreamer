@@ -217,11 +217,11 @@ def device_page():
         #Send status
         elif request.form["action"] == "status":
             res = D.sendCommand(device.WellKnownCommands.CMD_STATUS.value )
-            flash(f"Sent command '{ device.WellKnownCommands.CMD_STATUS.name }', got response '{ res }'")
+            flash(f"Sent command '{ device.WellKnownCommands.CMD_STATUS.value }', got response '{ res }'")
         #Send goto orign
         elif request.form["action"] == "goto-origin":
             res = D.sendCommand(device.WellKnownCommands.CMD_GOTO_ORIGIN.value )
-            flash(f"Sent command '{ device.WellKnownCommands.CMD_GOTO_ORIGIN.name }', got response '{ res }'")
+            flash(f"Sent command '{ device.WellKnownCommands.CMD_GOTO_ORIGIN.value }', got response '{ res }'")
         #Disconnect
         elif request.form["action"] == "disconnect":
             D.disconnect()
@@ -346,12 +346,7 @@ def logs_page():
 #Returns current status (Webservice - NOT A PAGE)
 @app.route('/status')
 def status_ws():
-    stat = ''
-    stat += f'Port: {D.port}\n'
-
-    state = D.status
-    stat += f'Device: {state.name}'
-
+    stat = f"{{ \"status\": \"{D.status.name}\", \"port\": \"{D.port}\" }}"
     return stat
 
 

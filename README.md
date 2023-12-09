@@ -73,6 +73,18 @@ Add in your config.py in the "notifiers" list member a member :
 ```
 That you will find in your Line developer channel (see https://pypi.org/project/line-bot-sdk/).
 
+## Setting up ActiveMQ
+
+### Server side
+RTFM https://activemq.apache.org/getting-started#InstallationProcedureforUnix
+
+```
+apt update
+apt install openjdk-17-jre-headless --yes
+wget "https://www.apache.org/dyn/closer.cgi?filename=/activemq/6.0.0/apache-activemq-6.0.0-bin.tar.gz&action=download"
+tar zxf apache-activemq-6.0.0-bin.tar.gz
+```
+
 # G-code things to remember
 This helped me so in case:
  - Fxxxx sets the move speed in unit per minute (xxx=1800 == 30mm/sec)
