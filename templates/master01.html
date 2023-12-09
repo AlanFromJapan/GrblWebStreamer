@@ -39,7 +39,7 @@
 {% endwith %}
 
 
-{% block contents %} {% endblock %}
+
 
 <div class="footer">Made by AlanFromJapan (started March2023) ~ MIT License ~ <a href="https://github.com/AlanFromJapan/GrblWebStreamer" target="_blank">Source code on GitHub</a></div>
 <script type="text/javascript">
@@ -51,8 +51,10 @@ updateCurrentStatus();
 const interval = setInterval(function() {
    // method to be executed;
    updateCurrentStatus();
- }, 1000);
+ }, 1500);
   
 
 </script>
+
+{% block contents %} {% endblock %}
 </body>

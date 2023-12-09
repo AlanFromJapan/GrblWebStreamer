@@ -26,6 +26,33 @@ def __getFrameFromComments (fileFullPath):
     return None
 
 
+#Used for cancellation, to force the device to stop and terminate nicely
+def sendOutroOnly (port:str):
+    logging.warn("Sending outro only")
+
+    outro = """; Outro, turn everything off nicely
+G90
+M9
+G1 S0
+M5
+G90
+; return to user-defined finish pos
+G0 X0 Y0
+M2
+"""
+    try:
+        for l in outro.split("\n"):
+            l = l.strip()
+            if l == '':
+                continue
+            #If you send outro, you don't care about the busy status (most likely it IS busy and you cancel a job)
+            res = serialUtils.sendCommand(port, l, ignoreBusyStatus=True)
+            logging.debug(f"Outro line '{ l }' result: { res }")
+
+    except Exception as ex:
+        logging.error("Error at outro : " + str(ex))
+
+
 #Attempts to frame tne file content (just more around where the action will be)
 def generateFrame(port, fileFullPath):
     fromto = __getFrameFromComments(fileFullPath)

@@ -141,6 +141,12 @@ def process_file(filename):
         elif request.form["action"] == "regen_thumbnail":
             #try to (re)make a thumbnail img
             genThumbnail(fileOnDisk)
+        
+        elif request.form["action"] == "stop":
+            #STOP!
+            D.emergencyStopRequested = True
+            flash(f"Emergency stop requested. Check device status.", "success")
+
         else:
             # START A JOB 
             #start time

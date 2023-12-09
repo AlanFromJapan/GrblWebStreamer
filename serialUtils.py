@@ -80,10 +80,10 @@ def disconnect():
 
 
 #send 1 command to the serial device (creating a new connection) and returns the response
-def sendCommand (port, cmd:str) -> str:
+def sendCommand (port, cmd:str, ignoreBusyStatus = False) -> str:
     global __SERIAL, __STATUS
 
-    if __STATUS in [ConnectionStatus.BUSY]:
+    if not ignoreBusyStatus and __STATUS in [ConnectionStatus.BUSY]:
         #allow for error, contrary to send file so you can "unstuck" the device with a magic command ... maybe.
         logging.error("Status error: device is busy, cannot send a command.")
         raise Exception ("Status error: device is busy, cannot send a command.")
@@ -132,7 +132,7 @@ def __linemodifier_laserMinimum(l:str) -> str:
 
 
 #process a file, line per line, applying modifiers to each line before sending them (ignore comments, change values on the fly, etc.)
-def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_skipComments]):
+def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_skipComments], forceStopCheck = None):
     global __SERIAL, __STATUS
 
     if __STATUS in [ConnectionStatus.BUSY, ConnectionStatus.ERROR]:
@@ -169,6 +169,12 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
                     #TODO check for the answer to be "ok" and if not handle it
 
                     logging.debug(f"{line.strip()} ==> {l.strip()} ==? {str(grbl_out).strip()}")
+                
+                #check for foreceful stop
+                if forceStopCheck != None and forceStopCheck():
+                    #it will stop here: so execute the outro somewhere else.
+                    logging.warn(f"Force stop requested on file {fileFullPath}.")
+                    break
         #update status
         __STATUS = ConnectionStatus.READY
 

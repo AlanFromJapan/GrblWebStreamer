@@ -35,6 +35,10 @@
                         <td>Runs the job <strong>for real</strong> on the device</td>
                     </tr>
                     <tr>
+                        <td class="left"><button id="btnStop" type="button" disabled="True" onClick="clickConfirm('action', 'stop', 'Are you sure? This will stop the laser.');"><b>✋ Stop</b> the job</button></td>
+                        <td>In case of emergency or whatever, click here to stop the job in the middle (will function for BURN only).</td>
+                    </tr>
+                    <tr>
                         <td colspan="2">
                             <hr />
                         </td>
@@ -89,16 +93,25 @@ function updateButtons(){
     var btnBurn = document.getElementById("btnBurn");
     var btnDelete = document.getElementById("btnDelete");
     var btnRegenThumb = document.getElementById("btnRegenThumb");
+    var btnStop = document.getElementById("btnStop");
 
     en = latestStatus["status"] == "IDLE";
-    btnFrame.disabled = !en;
-    btnSimulate.disabled = !en;
-    btnBurn.disabled = !en;
-    btnDelete.disabled = !en;
-    btnRegenThumb.disabled = !en;
+    panade = latestStatus["status"] == "NOT_FOUND" || latestStatus["status"] == "ERROR";
+
+    btnFrame.disabled = panade || !en;
+    btnSimulate.disabled = panade || !en;
+    btnBurn.disabled = panade || !en;
+    btnDelete.disabled = panade || !en;
+    btnRegenThumb.disabled = panade || !en;
+
+    //REVERSE logic for this one
+    btnStop.disabled = panade || en;
 }
 
-//Update buttons based on latest status fectched from the js in master01.html
+//do once 
+updateButtons();
+
+//..and repeat update buttons based on latest status fectched from the js in master01.html
 const intervalButtons = setInterval(function() {
    // method to be executed;
    updateButtons();

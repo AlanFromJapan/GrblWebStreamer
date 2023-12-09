@@ -25,6 +25,7 @@ class WellKnownCommands(Enum):
 class Device:
     port: str = None
     status = DeviceStatus.NOT_FOUND
+    emergencyStopRequested : bool = False
     
     #constructor
     def __init__(self, port):
@@ -64,17 +65,25 @@ class Device:
     #-------------------------------------------------------------
     def burn (self, fileOnDisk, asynchronous = False, job : Job = None):
         self.status = DeviceStatus.BUSY
+        self.emergencyStopRequested = False
         if asynchronous:
             threading.Thread(target=self.__burnAsync, args=(fileOnDisk, job, )).start()
         else:
             self.__burnAsync(fileOnDisk, job)
     
     def __burnAsync (self, fileOnDisk, job : Job = None):
-        serialUtils.processFile(self.port, fileOnDisk)
+        serialUtils.processFile(self.port, fileOnDisk, forceStopCheck=self.__checkForJobCancellation)
+        if self.emergencyStopRequested:
+            #send outro
+            grblUtils.sendOutroOnly(self.port)
+        self.emergencyStopRequested = False
         self.__completeJob(job)
 
 
-
+    #called by the serial utils to check if a job cancellation was requested
+    def __checkForJobCancellation (self):
+        #change status in the __burnAsync method
+        return self.emergencyStopRequested
 
 
     #-------------------------------------------------------------
