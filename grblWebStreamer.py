@@ -325,13 +325,24 @@ def os_page():
 
 #---------------------------------------------------------------------------------------
 #Shows the log file
-@app.route('/logs')
+@app.route('/logs', methods=['GET','POST'])
 def logs_page():    
     global latest_file
-    
+
+    #POST BACK POST BACK POST BACK
+    if request.method == 'POST':
+        # One button, submit type so has to be clean. If need more make a special page and rewrite it like other pages future lazy me
+
+        #"touch" clear the file a la python
+        open (config.myconfig["logfile"], "w").close()
+ 
+
     body = f"""
 <h1>Logs</h1>
 <p>File is at <code>{ config.myconfig["logfile"] }</code>:</p>
+    <form id="theForm" method="post" >
+        <input type="submit" name="action" value="Purge logs" />
+    </form>
 <pre>""" 
 
     try:
