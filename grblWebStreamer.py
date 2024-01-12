@@ -104,7 +104,7 @@ def upload_file():
             #try to make a thumbnail img
             genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
 
-            return redirect(url_for('process_file', filename=filename), latest=latest_file)
+            return redirect(url_for('process_file', filename=filename))
         else:
 
             flash(f"Forbidden file extension, use one of {ALLOWED_EXTENSIONS}", "error")
