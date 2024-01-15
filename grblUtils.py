@@ -109,6 +109,12 @@ M2
             logging.error(f"Couldn't delete temp frame file { tempfile }")
 
 
+#From a filename, returns the path to the thumbnail
+def pathToThumbnail (filename:str):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(dir_path, "static", "thumbnails", os.path.basename(filename) + ".png")
+
+
 #Creates an image PNG of the job stored in same folder, same name, with PNG suffix
 def createThumbnailForJob(fileFullPath:str):
     #Generate the PIL Image object based on sample code
@@ -118,14 +124,14 @@ def createThumbnailForJob(fileFullPath:str):
     img = img.transpose(Image.FLIP_TOP_BOTTOM)    
 
     #make sure it is saved in the subfolder of current file
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    thumbnail = os.path.join(dir_path, "static", "thumbnails", os.path.basename(fileFullPath) + ".png")
+    thumbnail = pathToThumbnail(fileFullPath) 
     img.save(thumbnail)
 
 
 #Delete thumbnail
 def deleteThumbnailForJob(filename:str):
-    os.remove(os.path.join("static", "thumbnails", filename + ".png"))
+    thumbnail = pathToThumbnail(filename) 
+    os.remove(thumbnail)
 
 
 #Returns the DEVICE status (Idle, Hold, ...)
