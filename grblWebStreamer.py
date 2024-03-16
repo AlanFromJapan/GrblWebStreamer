@@ -2,6 +2,8 @@ import config
 import serialUtils
 import grblUtils
 from  notifiers.baseNotifier import Job, JobType
+from connectors.baseConnector import BaseConnector
+from connectors.zmqSimplestorageConnector import ZMQSimpleStorageConnector
 import device
 
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
@@ -18,11 +20,15 @@ from markupsafe import escape
 
 ############################ BEFORE ANYTHING ELSE #################################
 #logging
-logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.get("log level", logging.INFO))
+logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.get("log level", logging.DEBUG), format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Starting app")
 
 latest_file = None
 D = device.Device(config.myconfig["device port"])
+
+#make sure upload folder exists
+if not os.path.exists(config.myconfig["upload folder"]):
+    os.makedirs(config.myconfig["upload folder"])
 
 ############################ FLASK VARS #################################
 app = Flask(__name__, static_url_path='')
@@ -111,7 +117,28 @@ def upload_file():
             return redirect("/")
 
 
-
+#handler for files fetching from all the connectors. As get too so can get wget-cron-ed easily. Useful maybe?
+@app.route('/fetch-file-connectors', methods=['POST', 'GET'])
+def fetch_files_connectors():    
+    try:
+        for conn in config.myconfig["connectors"]:
+            flash(f"Fetching files from { str(conn) } ...", "info")
+            count = 0
+            while True:            
+                filename = conn.fetchLatest()
+                if filename:
+                    count = count + 1
+                    flash(f"Successfully fetched file [{escape(filename)}] from { str(conn) }", "success")
+                    #try to make a thumbnail img
+                    genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+                else:
+                    break
+            flash(f"Done fetching {count} files from connectors.", "info")
+    except Exception as ex:
+        logging.error(f"ERROR while fetching files from connectors with message '{ex}'")
+        flash(f"ERROR while fetching files from connectors with message '{ex}'", "error")
+    
+    return redirect("/")
 
 
 #---------------------------------------------------------------------------------------
@@ -121,6 +148,12 @@ def process_file(filename):
     global latest_file
     
     fileOnDisk = os.path.join(config.myconfig['upload folder'], secure_filename(filename))
+
+    #exists?
+    if not os.path.exists(fileOnDisk):
+        flash(f'File [{escape(filename)}] not found', "error")
+        logging.error(f"process_file(): [{fileOnDisk}] not found")
+        return redirect("/")
 
     #remember latest
     latest_file = filename

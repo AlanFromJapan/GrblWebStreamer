@@ -8,11 +8,20 @@ By AlanFromJapan / MIT license / Full source code here <a href="https://github.c
 This application is not approved nor affiliated with GRBL or anyone.<br/>
 <br/>
 <div class="uploader">
-  <h2>Upload a GBRL file</h2>
+  <h2>⏫ Upload a GBRL file</h2>
   Pick a file to process (*.nc or *.gc files only):<br/><br/>
   <form method="post" enctype="multipart/form-data" action="upload-file">
       <input type="file" name="file">
       <input type="submit" value="Upload">
+    </form>
+</div>
+
+<div class="uploader">
+  <h2>⏬ Load all GBRL files from Connectors</h2>
+  You might have connectors that are already containing files to process. If so, you can load all the files from here.<br/>
+  <form method="post" enctype="multipart/form-data" action="fetch-file-connectors">
+      
+      <input type="submit" value="Fetch files">
     </form>
 </div>
 {{ dbg }}

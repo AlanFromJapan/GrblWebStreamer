@@ -14,5 +14,7 @@ myconfig = {
 
     "notifiers" : [ BaseNotifier(), FlashNotifier() ],
 
-    "log level" : logging.DEBUG
+    "log level" : logging.DEBUG,
+
+    "connectors" : []
 }
