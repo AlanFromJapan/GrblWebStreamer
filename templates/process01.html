@@ -3,7 +3,7 @@
 {% block pagename %} File processor {% endblock %}
 
 {% block contents %} 
-<h1>File process [{{filename}}]</h1>
+<h1>Processing [<span class="process_filename">{{filename}}</span>]</h1>
 
 
 <form id="theForm" method="post" >
@@ -11,8 +11,8 @@
 <table class="process">
     <tr>
         <td>
-            <h2>File content (top 100 lines) (file is {{ filesize }}kB)</h2>
-            <div id="filebody" >{{filebody}}</div>
+            <h2>Preview thumbnail</h2>
+            <img src="/thumbnails/{{filename}}.png" class="thumbnail"/>
         </td>
         <td>
             <h2>Actions</h2>
@@ -52,8 +52,8 @@
     </tr>
     <tr>
         <td>
-            <h2>Preview thumbnail</h2>
-            <img src="/thumbnails/{{filename}}.png" class="thumbnail"/>
+            <h2>File content (top 100 lines) (file is {{ filesize }}kB)</h2>
+            <div id="filebody" >{{filebody}}</div>
         </td>
         <td>
             <h2>Preview actions</h2>

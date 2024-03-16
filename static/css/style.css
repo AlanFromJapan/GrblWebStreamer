@@ -140,6 +140,9 @@ div.uploader {
 /* **************************************************************************************************************** */
 /* Process page*/
 
+h1 .process_filename{
+    color:whitesmoke;
+}
 
 #filebody{
     display: block;
