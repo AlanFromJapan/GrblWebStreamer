@@ -9,7 +9,7 @@ import logging
 context = zmq.Context()
 socket = context.socket(zmq.REQ)
 
-class ZQMSimpleStorageConnector(BaseConnector):
+class ZMQSimpleStorageConnector(BaseConnector):
     __socket : zmq.Socket = None
     __storagePath : str = "testfolder"
 
@@ -24,7 +24,7 @@ class ZQMSimpleStorageConnector(BaseConnector):
 
     # Fetches the latest data from the connector, returns filename if successful, None if no data
     def fetchLatest(self) -> str:
-        logging.info("Fetching latest data from ZQM Simple Storage")
+        logging.info("Fetching latest data from ZMQ Simple Storage")
         try:
             msg = """{
                 "message": "fetch"
@@ -52,5 +52,5 @@ class ZQMSimpleStorageConnector(BaseConnector):
 
             return output_filename
         except Exception as e:
-            logging.error(f"Error fetching data from ZQM Simple Storage: {e}")
+            logging.error(f"Error fetching data from ZMQ Simple Storage: {e}")
             return None
