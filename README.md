@@ -23,6 +23,7 @@ Runs on python3, dependencies:
  - pySerial (installed as OS package on Raspberry Pi)
  - [grbl2image](https://github.com/AlanFromJapan/grbl2image)
  - line-bot-sdk
+ - pyzmq ([ZMQ](https://zeromq.org/) for downloading files from other computers of your home NW)
  
 # Setup
 ## Basics
@@ -73,21 +74,22 @@ Add in your config.py in the "notifiers" list member a member :
 ```
 That you will find in your Line developer channel (see https://pypi.org/project/line-bot-sdk/).
 
-## Setting up ActiveMQ
+## How to setup the ZeroMQ connector
 
-### Server side
-RTFM https://activemq.apache.org/getting-started#InstallationProcedureforUnix
+I gave up on ActiveMQ that was still to heavy for my purpose and gave myself to the NIH demon one more time. I re-implemented the most basic, security less, feature poor MQ store/fetch service with ZeroMQ https://zeromq.org/.
 
+The project for the **server** is here : https://github.com/AlanFromJapan/zeromq-simplestorage. Do not _EVER_ use this outside of the safety of your home NW!
+
+The usage is simple: store .nc or .gc files in your ZMQ and when you ask (I didn't make it automatic, not sure it's a great idea) the GrblWebStreamer server will download them all, make a thumbnail and save them on its server.
+
+### Configuring ZeroMQ connector
+Add in your config.py in the "connectors" list member a member :
+```python
+    ZMQSimpleStorageConnector(
+        #Where you want the uploaded files to be stored. Must be same as the regular UPLOAD function so make a const and reuse.
+        storagePath=__STORAGE_PATH, 
+        #DNS or IP of your home ZMQ server and the port it listens to
+        serverHostPort="my-home-zmq-server:12345"
+    )
 ```
-apt update
-apt install openjdk-17-jre-headless --yes
-wget "https://www.apache.org/dyn/closer.cgi?filename=/activemq/6.0.0/apache-activemq-6.0.0-bin.tar.gz&action=download"
-tar zxf apache-activemq-6.0.0-bin.tar.gz
-```
 
-# G-code things to remember
-This helped me so in case:
- - Fxxxx sets the move speed in unit per minute (xxx=1800 == 30mm/sec)
- - Sxxx sets the laser power in per thousands (xxx=600 == 60.0%)
- - G0 is move but don't burn, G1 is move n burn
- - G90 means positions ABSOLUTE, G91 means positions are RELATIVE
