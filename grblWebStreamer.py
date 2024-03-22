@@ -121,19 +121,19 @@ def upload_file():
 @app.route('/fetch-file-connectors', methods=['POST', 'GET'])
 def fetch_files_connectors():    
     try:
-        for conn in config.myconfig["connectors"]:
+        count = 0
+        for conn in config.myconfig.get("connectors", []):
             flash(f"Fetching files from { str(conn) } ...", "info")
-            count = 0
             while True:            
                 filename = conn.fetchLatest()
                 if filename:
                     count = count + 1
-                    flash(f"Successfully fetched file [{escape(filename)}] from { str(conn) }", "success")
+                    flash(f"Successfully fetched file [{escape(filename)}]", "success")
                     #try to make a thumbnail img
                     genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
                 else:
                     break
-            flash(f"Done fetching {count} files from connectors.", "info")
+        flash(f"Done fetching {count} file(s) from connectors.", "info")
     except Exception as ex:
         logging.error(f"ERROR while fetching files from connectors with message '{ex}'")
         flash(f"ERROR while fetching files from connectors with message '{ex}'", "error")
@@ -293,21 +293,48 @@ def device_page():
 
 
 #---------------------------------------------------------------------------------------
+#list of GRBL files
+def getGRBLfiles():
+    return [l for l in os.listdir(config.myconfig['upload folder']) if os.path.isfile(os.path.join(config.myconfig['upload folder'], l)) and l.lower()[-3:] == '.nc']
+
 #List the recently sent files
-@app.route('/replay')
+@app.route('/replay', methods=['GET','POST'])
 def replay_page():    
     global latest_file
-    
+
+    #list of files
+    l = getGRBLfiles()
+        
+    #POST BACK POST BACK POST BACK
+    if request.method == 'POST':
+        # Shutdown
+        if request.form["action"] in ["deleteall", "deleteall1w"]:
+            count = 0
+            for f in l:
+                try:
+                    if request.form["action"] == "deleteall1w":
+                        #delete only files older than 1 week
+                        if (datetime.now() - timedelta(days=7)) < datetime.fromtimestamp(os.path.getmtime(os.path.join(config.myconfig['upload folder'], f))):
+                            continue
+                    os.remove(os.path.join(config.myconfig['upload folder'], f))
+                    grblUtils.deleteThumbnailForJob(f)
+                    count += 1
+                except Exception as ex:
+                    flash(f'Failed deleting file [{escape(f)}]', "error")
+                    logging.error(f"ERROR while deleting file {f} with message '{ex}'")
+            flash(f'Successfully deleted {count} file(s)', "success")
+
+            #refresh list
+            l = getGRBLfiles()
+
+
     body = ''
     content = ""
 
-    #list of files
-    l = [l for l in os.listdir(config.myconfig['upload folder']) if os.path.isfile(os.path.join(config.myconfig['upload folder'], l)) and l.lower()[-3:] == '.nc']
     #sorted ignorecase
     l = sorted(l, key=lambda x: str(x).lower())
 
     body += """
-<h1>Recently uploaded files</h1>
 Click to (re)process uploaded files:"""
 
     content = ""
@@ -326,7 +353,7 @@ Click to (re)process uploaded files:"""
     body += """<br/>
 Remember: go to the <a href="/">Home page</a> to upload a script!"""
 
-    return render_template("template01.html", pagename="Replay", pagecontent=body, latest=latest_file)
+    return render_template("replay01.html", pagename="Replay", pagecontent=body, latest=latest_file)
     
 
 
