@@ -128,6 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
+#AVI
 config.py
 static/thumbnails/*.png
+#venv
+bin/
+lib/
+lib64
+lib64/
+pyvenv.cfg

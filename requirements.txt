@@ -1,3 +1,5 @@
+flask
+pyserial
 grbl2image
 line-bot-sdk
 pyzmq
