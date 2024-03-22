@@ -7,16 +7,22 @@
 
 
 <form id="theForm" method="post" >
-
-<table class="process">
-    <tr>
-        <td>
-            <button type="button" onClick="clickConfirm('action', 'deleteall', 'Are you SURE you DELETE all the uploaded GRBL files?');"><b>🗑️ Delete all</b> GRBL files</button>                
-            <button type="button" onClick="clickConfirm('action', 'deleteall1w', 'Are you SURE you DELETE all the uploaded GRBL files OLDER THAN 1 WEEK?');"><b>🗓️ Delete</b> GRBL files <b>older than 1 week</b></button>                
-        </td>
-    </tr>
-</table>
-
+    <table class="process">
+        <tr>
+            <td>
+                <table class="actions">
+                    <tr>
+                        <td>
+                            <button type="button" onClick="clickConfirm('action', 'deleteall', 'Are you SURE you DELETE all the uploaded GRBL files?');"><b>🗑️ Delete all</b> GRBL files</button>
+                        </td>
+                        <td>
+                            <button type="button" onClick="clickConfirm('action', 'deleteall1w', 'Are you SURE you DELETE all the uploaded GRBL files OLDER THAN 1 WEEK?');"><b>🗓️ Delete</b> GRBL files <b>older than 1 week</b></button>                
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </form>
 
 <h1>Uploaded Files</h1>

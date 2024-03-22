@@ -22,10 +22,6 @@
                         <td>Goes around the border of the work</td>
                     </tr>
                     <tr>
-                        <td class="left"><button id="btnSimulate" type="button" onClick="clickConfirm('action', 'simulate', 'Are you sure? You won\' be able to stop it until the end.');"><b>🔍 Simulate</b> the job</button></td>
-                        <td>Runs the job but dynamically overlay the laser power to 1% (visible but not engraving)</td>
-                    </tr>
-                    <tr>
                         <td colspan="2">
                             <hr />
                         </td>
@@ -61,7 +57,11 @@
                 <tr>
                     <td class="left"><button id="btnRegenThumb" type="button" onClick="clickConfirm('action', 'regen_thumbnail', '');"><b>📐 Regenerate</b> the thumbnail</button></td>
                     <td>In case it is missing or something happened, click the button to <strong>regenerate the thumbnail</strong> for this job.</td>
-                </tr>      
+                </tr>     
+                <tr>
+                    <td class="left"><button id="btnSimulate" type="button" onClick="clickConfirm('action', 'simulate', 'Are you sure? You won\' be able to stop it until the end.');"><b>🔍 Simulate</b> the job</button></td>
+                    <td>Runs the job but dynamically overlay the laser power to 1% (visible but not engraving)</td>
+                </tr> 
             </table>
         </td>
     </tr>

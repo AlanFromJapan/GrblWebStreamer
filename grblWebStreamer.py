@@ -253,6 +253,9 @@ def device_page():
         elif request.form["action"] == "resume":
             res = D.sendCommand(device.WellKnownCommands.CMD_RESUME.value )
             flash(f"Sent RESUME command (~), got response '{ res }'.\nCheck if device is in IDLE status now.")
+
+            res = D.sendCommand(device.WellKnownCommands.CMD_STATUS.value )
+            flash(f"Sent command '{ device.WellKnownCommands.CMD_STATUS.value }', got response '{ res }'")
         #Send status
         elif request.form["action"] == "status":
             res = D.sendCommand(device.WellKnownCommands.CMD_STATUS.value )
