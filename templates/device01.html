@@ -40,16 +40,26 @@
                             </td>
                     </tr>
                     <tr>
-                        <td><button type="button" onClick="clickConfirm('action', 'disconnect', '');"> <b>🔌 Disconnect</b> from the device</button></td>
-                        <td>Because sometimes things don't go as planned, disconnect from serial port</td>
+                        <td colspan="2">
+                            <hr />
+                        </td>
                     </tr>
                     <tr>
                         <td><button type="button" onClick="clickConfirm('action', 'resume', '');"> <b>🔂 Resume</b> activities of the device (if it's on HOLD state)</button></td>
                         <td>Because sometimes things don't go as planned, if the device is in HOLD state (after an issue it detected), try to make it resume and go back to IDLE.</td>
                     </tr>
+                    <tr>
+                        <td><button type="button" onClick="clickConfirm('action', 'disconnect', '');"> <b>🔌 Disconnect</b> from the device</button></td>
+                        <td>Because sometimes things don't go as planned, disconnect from serial port</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <hr />
+                        </td>
+                    </tr>
                 </table>
-                <br/>
-                <br/>
+
+                <h2>Custom commands</h2>
                 <div class="custom-cmd">
                     <input type="text" value="" name="cmd" /><button type="button" onClick="clickConfirm('action', 'cmd', '');"> <b>📨Send</b></button>
                 </div>
