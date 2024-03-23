@@ -72,7 +72,13 @@ class Device:
             self.__burnAsync(fileOnDisk, job)
     
     def __burnAsync (self, fileOnDisk, job : Job = None):
-        serialUtils.processFile(self.port, fileOnDisk, forceStopCheck=self.__checkForJobCancellation)
+        #the modifiers to use when burning a file
+        linemodif = [serialUtils.__linemodifier_skipComments]
+        if not config.myconfig.get("G4 delays handled by device", True):
+            #if your device doesn't handle G4 delays, you can use this to handle them on the software "sending" side
+            linemodif.append(serialUtils.__linemodifier_delayCommands)
+
+        serialUtils.processFile(self.port, fileOnDisk, lineModifiers=linemodif, forceStopCheck=self.__checkForJobCancellation)
         if self.emergencyStopRequested:
             #send outro
             grblUtils.sendOutroOnly(self.port)
@@ -95,9 +101,21 @@ class Device:
             self.__frameAsync(fileOnDisk, job)
 
     def __frameAsync(self, fileOnDisk, job : Job = None):
-        grblUtils.generateFrame(self.port, fileOnDisk)
+        grblUtils.generateFrame(self.port, fileOnDisk, framingSpeendInMMPerSec=25)
         self.__completeJob(job)
 
+
+    #-------------------------------------------------------------
+    def frameWithCornerPause(self, fileOnDisk, asynchronous = False, job : Job = None):
+        self.status = DeviceStatus.BUSY
+        if asynchronous:
+            threading.Thread(target=self.__frameWithCornerPauseAsync, args=(fileOnDisk,job, )).start()
+        else:
+            self.__frameWithCornerPauseAsync(fileOnDisk, job)
+
+    def __frameWithCornerPauseAsync(self, fileOnDisk, job : Job = None):
+        grblUtils.generateFrame(self.port, fileOnDisk, pauseAtCornersInSec=4, framingSpeendInMMPerSec=50)
+        self.__completeJob(job)
 
     #-------------------------------------------------------------
 

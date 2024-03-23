@@ -208,6 +208,10 @@ def process_file(filename):
                 elif request.form["action"] == "frame":
                     #frame the workspace SYNCHRONOUSLY
                     D.frame(fileOnDisk, asynchronous=True, job = j)
+
+                elif request.form["action"] == "frameCornerPause":
+                    #frame the workspace SYNCHRONOUSLY with a few second pause at each corner
+                    D.frameWithCornerPause(fileOnDisk, asynchronous=True, job = j)
                     
                 else:
                     flash("Unknow or TODO implement", "error")

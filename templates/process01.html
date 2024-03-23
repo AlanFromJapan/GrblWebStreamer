@@ -22,6 +22,10 @@
                         <td>Goes around the border of the work</td>
                     </tr>
                     <tr>
+                        <td class="left"><button id="btnFrameCornerPause" type="button" onClick="clickConfirm('action', 'frameCornerPause', '');"><b>📍 Show the 4 corners</b> with small pause</button></td>
+                        <td>Goes to the 4 corners of the job (faster that frame function) and pause there for a few seconds.</td>
+                    </tr>
+                    <tr>
                         <td colspan="2">
                             <hr />
                         </td>
@@ -89,6 +93,7 @@ function updateButtons(){
     if (latestStatus == null)
         return;
     var btnFrame = document.getElementById("btnFrame");
+    var btnFrameCorners = document.getElementById("btnFrameCornerPause");
     var btnSimulate = document.getElementById("btnSimulate");
     var btnBurn = document.getElementById("btnBurn");
     var btnDelete = document.getElementById("btnDelete");
@@ -99,6 +104,7 @@ function updateButtons(){
     panade = latestStatus["status"] == "NOT_FOUND" || latestStatus["status"] == "ERROR";
 
     btnFrame.disabled = panade || !en;
+    btnFrameCorners.disabled = panade || !en;
     btnSimulate.disabled = panade || !en;
     btnBurn.disabled = panade || !en;
     btnDelete.disabled = panade || !en;

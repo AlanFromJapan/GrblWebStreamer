@@ -16,5 +16,7 @@ myconfig = {
 
     "log level" : logging.DEBUG,
 
-    "connectors" : []
+    "connectors" : [],
+
+    "G4 delays handled by device" : True,
 }
