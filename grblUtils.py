@@ -75,21 +75,21 @@ G00 G17 G40 G21 G54
 G90
 M4
 M8
-; Go to origin, 1 percent  laser, {framingSpeendInMMPerSec} mm /sec ({framingSpeendInMMPerSec * 60}/min)
+; Go to origin, 1 percent  laser, {framingSpeendInMMPerSec} mm /sec ({framingSpeendInMMPerSec * 60} mm/min)
 G0 X0Y0S010F{framingSpeendInMMPerSec * 60}
 ; Now move to corner and trace
 """)
             
             f.write(f"G0 X{ fromto[0][0] }Y{ fromto[0][1] }\n")
-            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:.1f }\n")
+            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:0.1f}\n")
             f.write(f"G1 X{ fromto[1][0] }\n")
-            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:.1f }\n")
+            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:0.1f}\n")
             f.write(f"G1 Y{ fromto[1][1] }\n")
-            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:.1f }\n")
+            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:0.1f}\n")
             f.write(f"G1 X{ fromto[0][0] }\n")
-            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:.1f }\n")
+            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:0.1f}\n")
             f.write(f"G1 Y{ fromto[0][1] }\n")
-            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:.1f }\n")
+            if pauseAtCornersInSec > 0.0: f.write(f"G4 P{ pauseAtCornersInSec:0.1f}\n")
 
             f.write("""
 ; Outro, turn everything off nicely
