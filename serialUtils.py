@@ -68,7 +68,8 @@ def connect(port, forceDisconnect = False):
 def disconnect():
     global __SERIAL, __PORT, __STATUS
     try:
-        __SERIAL.close()
+        if __SERIAL != None:
+            __SERIAL.close()
     except Exception as ex:
         logging.error("EXCEPT on disconnect:" + str(ex))
     
