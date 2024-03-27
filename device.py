@@ -73,10 +73,10 @@ class Device:
     
     def __burnAsync (self, fileOnDisk, job : Job = None):
         #the modifiers to use when burning a file
-        linemodif = [serialUtils.__linemodifier_skipComments]
+        linemodif = [serialUtils.linemodifier_skipComments]
         if not config.myconfig.get("G4 delays handled by device", True):
             #if your device doesn't handle G4 delays, you can use this to handle them on the software "sending" side
-            linemodif.append(serialUtils.__linemodifier_delayCommands)
+            linemodif.append(serialUtils.linemodifier_delayCommands)
 
         serialUtils.processFile(self.port, fileOnDisk, lineModifiers=linemodif, forceStopCheck=self.__checkForJobCancellation)
         if self.emergencyStopRequested:

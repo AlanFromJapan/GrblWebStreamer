@@ -116,7 +116,7 @@ def sendCommand (port, cmd:str, ignoreBusyStatus = False) -> str:
 
 
 #line modifier : set comments to None
-def __linemodifier_skipComments(l:str) -> str:
+def linemodifier_skipComments(l:str) -> str:
     if l[0] == ";":
         return None
     else:
@@ -124,7 +124,7 @@ def __linemodifier_skipComments(l:str) -> str:
 
 
 #line modifier : set laser to 1% (replace Sxxx with S010)
-def __linemodifier_laserMinimum(l:str) -> str:
+def linemodifier_laserMinimum(l:str) -> str:
     #TODO find a way to NOT catch the final "G1 S0" that (should be here to) turn off the laser. Too late for regex now.
     l = re.sub("S\\d+", "S010", l)
     return l
@@ -132,7 +132,7 @@ def __linemodifier_laserMinimum(l:str) -> str:
 
 
 #line modifier : on delay commands, sleep for a while
-def __linemodifier_delayCommands(l:str) -> str:
+def linemodifier_delayCommands(l:str) -> str:
     """ https://www.sainsmart.com/blogs/news/grbl-v1-1-quick-reference
     G4 Pxxx : Dwell, Pause / Delay in SECONDS
     """
@@ -146,7 +146,7 @@ def __linemodifier_delayCommands(l:str) -> str:
     
 
 #process a file, line per line, applying modifiers to each line before sending them (ignore comments, change values on the fly, etc.)
-def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_skipComments], forceStopCheck = None):
+def processFile (port:str, fileFullPath:str, lineModifiers = [linemodifier_skipComments], forceStopCheck = None):
     global __SERIAL, __STATUS
 
     if __STATUS in [ConnectionStatus.BUSY, ConnectionStatus.ERROR]:
@@ -203,10 +203,10 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [__linemodifier_ski
 #process one file for fake (laser min val)
 def simulateFile(port:str, fileFullPath:str):
     #the modifiers to use when burning a file
-    linemodif = [__linemodifier_skipComments, __linemodifier_laserMinimum]
+    linemodif = [linemodifier_skipComments, linemodifier_laserMinimum]
     if not config.myconfig.get("G4 delays handled by device", True):
         #if your device doesn't handle G4 delays, you can use this to handle them on the software "sending" side
-        linemodif.append(__linemodifier_delayCommands)
+        linemodif.append(linemodifier_delayCommands)
 
     processFile(port, fileFullPath, lineModifiers=linemodif)
 
