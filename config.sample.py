@@ -19,4 +19,6 @@ myconfig = {
     "connectors" : [],
 
     "G4 delays handled by device" : True,
+
+    "db_file": "/tmp/laser.db",
 }

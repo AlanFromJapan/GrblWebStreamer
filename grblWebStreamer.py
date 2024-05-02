@@ -2,9 +2,8 @@ import config
 import serialUtils
 import grblUtils
 from  notifiers.baseNotifier import Job, JobType
-from connectors.baseConnector import BaseConnector
-from connectors.zmqSimplestorageConnector import ZMQSimpleStorageConnector
 import device
+from persistence.db import LaserJobDB
 
 from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
 from datetime import datetime, timedelta
@@ -445,6 +444,9 @@ USAGE:
 If you don't provide the *.pem files it will start as an HTTP app. You need to pass both .pem files to run as HTTPS.
     """)
     try:
+        #init the DB   
+        LaserJobDB.initialize(config.myconfig.get("db_file", "laser_jobs.db"))
+
         #start web interface
         app.debug = not config.myconfig["isProd"]
         
@@ -463,4 +465,7 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
             app.run(host='0.0.0.0', port=int(config.myconfig["app_port"]), threaded=True)
 
     finally:
+        #close the DB
+        LaserJobDB.close()
+
         pass
