@@ -45,8 +45,9 @@ def genThumbnail(fileFullPath):
     #try to make a thumbnail img
     filename = secure_filename(os.path.basename(fileFullPath))
     try:
-        grblUtils.createThumbnailForJob(fileFullPath)
+        stats = grblUtils.createThumbnailForJob(fileFullPath)
         flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
+        return stats
     except Exception as ex:
         flash(f'Failed creating thumbnail for [{escape(filename)}] with message "{str(ex)}"', "error")
 
@@ -107,7 +108,13 @@ def upload_file():
             flash(f'Successfully uploaded file [{escape(filename)}]', "success")
 
             #try to make a thumbnail img
-            genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+            stats = genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+
+            logging.info(f"{filename} > stats: {stats}")
+
+            #save in DB
+            j = LaserJobDB(filename, stats=stats)
+            LaserJobDB.record_job(j)
 
             return redirect(url_for('process_file', filename=filename))
         else:

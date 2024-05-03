@@ -123,9 +123,9 @@ def pathToThumbnail (filename:str):
 
 
 #Creates an image PNG of the job stored in same folder, same name, with PNG suffix
-def createThumbnailForJob(fileFullPath:str):
+def createThumbnailForJob(fileFullPath:str) -> G2I.JobStats:
     #Generate the PIL Image object based on sample code
-    img, _ = G2I.processFile(fileFullPath, color="crimson")
+    img, stats = G2I.processFile(fileFullPath, color="crimson")
 
     #final flip because the image 0,0 is top left and for us human it's at the bottom left
     img = img.transpose(Image.FLIP_TOP_BOTTOM)    
@@ -133,6 +133,9 @@ def createThumbnailForJob(fileFullPath:str):
     #make sure it is saved in the subfolder of current file
     thumbnail = pathToThumbnail(fileFullPath) 
     img.save(thumbnail)
+
+    #return the stats
+    return stats
 
 
 #Delete thumbnail

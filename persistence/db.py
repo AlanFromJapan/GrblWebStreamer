@@ -1,6 +1,7 @@
 import sqlite3
 import datetime
 from threading import Lock
+import grbl2image.grbl2image as G2I
 
 class LaserJobDB:
     __lock = Lock()
@@ -9,7 +10,8 @@ class LaserJobDB:
 
     @classmethod
     def initialize(cls, db_file):
-        LaserJobDB.__conn = sqlite3.connect(db_file)
+        #check_same_thread=False to allow jobs (on worker thread) to use the connection (static, that was created on MAIN thread)
+        LaserJobDB.__conn = sqlite3.connect(db_file, check_same_thread=False)
         LaserJobDB.__cursor = LaserJobDB.__conn.cursor()
         LaserJobDB.create_table()
 
@@ -22,7 +24,9 @@ class LaserJobDB:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT,
                     submission_date TEXT,
-                    estimated_duration INTEGER
+                    estimated_duration INTEGER,
+                    fromXYmm TEXT,
+                    toXYmm TEXT                 
                 )
             ''')
             LaserJobDB.__conn.commit()
@@ -35,12 +39,17 @@ class LaserJobDB:
             return LaserJobDB.__cursor.fetchall()
 
     @classmethod
+    def strXY2array(cls, xyStr):
+        xy = xyStr.split(',')
+        return [float(xy[0]), float(xy[1])]
+    
+    @classmethod
     def get_job(cls, job_name):
         with LaserJobDB.__lock:
             LaserJobDB.__cursor.execute('SELECT * FROM laser_jobs where name = ? ORDER BY submission_date DESC', (job_name,))
             ro = LaserJobDB.__cursor.fetchone()
             if ro:
-                return LaserJobDB(ro[1], ro[3], ro[2])
+                return LaserJobDB(name=ro[1], submission_date=ro[3], duration=ro[2], fromXY=LaserJobDB.strXY2array(ro[4]), toXY=LaserJobDB.strXY2array(ro[5]), stats=None)
             else:
                 return None
             
@@ -50,15 +59,23 @@ class LaserJobDB:
         LaserJobDB.__conn.close()
 
 
-    def __init__(self, name, duration, submission_date=datetime.datetime.now()):
+    def __init__(self, name, duration=0, submission_date=datetime.datetime.now(), fromXY=[0,0], toXY=[200, 200], stats:G2I.JobStats=None):
         self.name = name
-        self.estimated_duration = duration
         self.submission_date = submission_date
+
+        if stats:
+            self.estimated_duration = stats.estimatedDurationSec
+            self.fromXY = stats.pointFromMM
+            self.toXY = stats.pointToMM
+        else:
+            self.estimated_duration = duration
+            self.fromXY = fromXY
+            self.toXY = toXY
         
     def record_job(self):
         with LaserJobDB.__lock:
             LaserJobDB.__cursor.execute('''
-                INSERT INTO laser_jobs (name, submission_date, estimated_duration)
-                VALUES (?, ?, ?)
-            ''', (self.name, datetime.datetime.now(), self.estimated_duration))
+                INSERT INTO laser_jobs (name, submission_date, estimated_duration, fromXYmm, toXYmm)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (self.name, datetime.datetime.now(), f"{self.estimated_duration:0.1f}", f"{self.fromXY[0]:0.1f},{self.fromXY[1]:0.1f}", f"{self.toXY[0]:0.1f},{self.toXY[1]:0.1f}"))
             LaserJobDB.__conn.commit()
