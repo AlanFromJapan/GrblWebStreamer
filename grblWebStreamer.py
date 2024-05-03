@@ -164,6 +164,13 @@ def process_file(filename):
     #remember latest
     latest_file = filename
 
+    jobDetails = None
+    try:
+        jobDetails = LaserJobDB.get_job(filename)
+    except Exception as ex:
+        flash("Error while fetching job details from DB", "error")
+        pass
+
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
         if request.form["action"] == "deletefile":
@@ -236,7 +243,7 @@ def process_file(filename):
     
     filesize = float(os.path.getsize(fileOnDisk)) / 1000.0
         
-    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=latest_file)
+    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=latest_file, jobDetails=jobDetails)
     
 
 

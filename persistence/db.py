@@ -49,7 +49,7 @@ class LaserJobDB:
             LaserJobDB.__cursor.execute('SELECT * FROM laser_jobs where name = ? ORDER BY submission_date DESC', (job_name,))
             ro = LaserJobDB.__cursor.fetchone()
             if ro:
-                return LaserJobDB(name=ro[1], submission_date=ro[3], duration=ro[2], fromXY=LaserJobDB.strXY2array(ro[4]), toXY=LaserJobDB.strXY2array(ro[5]), stats=None)
+                return LaserJobDB(name=ro[1], submission_date=ro[2], duration=ro[3], fromXY=LaserJobDB.strXY2array(ro[4]), toXY=LaserJobDB.strXY2array(ro[5]), stats=None)
             else:
                 return None
             
