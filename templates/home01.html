@@ -11,7 +11,7 @@ This application is not approved nor affiliated with GRBL or anyone.<br/>
   <h2>⏫ Upload a GBRL file</h2>
   Pick a file to process (*.nc or *.gc files only):<br/><br/>
   <form method="post" enctype="multipart/form-data" action="upload-file">
-      <input type="file" name="file">
+      <input type="file" name="file" onchange="this.form.submit();">
       <input type="submit" value="Upload">
     </form>
 </div>
