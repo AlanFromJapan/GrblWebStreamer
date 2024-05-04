@@ -12,14 +12,16 @@
     <tr>
         <td>
             <h2>Preview thumbnail</h2>
-            <img src="/thumbnails/{{filename}}.png" class="thumbnail"/>
+            <a href="/thumbnails/{{filename}}.png" target="_blank">
+                <img src="/thumbnails/{{filename}}.png" class="thumbnail" alt="Click to see in full"/>
+            </a>
             <div>
                 <h3>Job details</h3>
                 {% if jobDetails %}
                 <ul>
-                    <li>Duration: {{jobDetails.estimated_duration}} sec</li>
-                    <li>Size: {{jobDetails.fromXY}} - {{jobDetails.toXY}} mm</li>
-                    <li>Upload date: {{jobDetails.submission_date}}</li>
+                    <li>⏲️Duration: {{jobDetails.estimated_duration}} sec</li>
+                    <li>📏Size: {{jobDetails.fromXY}} - {{jobDetails.toXY}} mm</li>
+                    <li>📅Upload date: {{jobDetails.submission_date}}</li>
                 </ul>
                 {% else %}
                 <p>Job details not available</p>
