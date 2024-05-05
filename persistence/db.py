@@ -79,3 +79,19 @@ class LaserJobDB:
                 VALUES (?, ?, ?, ?, ?)
             ''', (self.name, datetime.datetime.now(), f"{self.estimated_duration:0.1f}", f"{self.fromXY[0]:0.1f},{self.fromXY[1]:0.1f}", f"{self.toXY[0]:0.1f},{self.toXY[1]:0.1f}"))
             LaserJobDB.__conn.commit()
+
+    #Couldn't find an easy way to NOT replicate this function from baseNotifier.py I hate copy paste but I see no (easy) other way here
+    def durationPretty(self) -> str:
+        sec = self.estimated_duration
+        s = ""
+
+        if sec < 60.0:
+            s = f"{sec:0.1f} seconds"
+        elif sec < 3600.0:
+            s = f"{sec/60:0.0f} min {sec % 60:0.0f} sec"
+        elif sec < (3600.0 * 24.0):
+            s = f"{sec/3600:0.0f} hour(s) {(sec % 3600) /60:0.0f} min"
+        else:
+            s = str(d)
+
+        return s

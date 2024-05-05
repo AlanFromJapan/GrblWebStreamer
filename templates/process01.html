@@ -20,7 +20,7 @@
                 <h3>Job details</h3>
                 {% if jobDetails %}
                 <ul>
-                    <li><strong>⏲️Duration: {{jobDetails.estimated_duration}} sec</strong></li>
+                    <li><strong>⏲️Duration: {{jobDetails.durationPretty()}}</strong></li>
                     <li><strong>📏Work area:</strong> {{jobDetails.fromXY}} - {{jobDetails.toXY}} mm</li>
                     <li><strong>💾File size:</strong> {{ filesize }}kB</li>
                     <li><strong>📅Upload:</strong> {{jobDetails.submission_date}}</li>
