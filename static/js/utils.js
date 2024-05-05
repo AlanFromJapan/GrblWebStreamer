@@ -91,11 +91,29 @@ function zoomImage(original, result, fromx, fromy, tox, toy){
     console.log(`Image zoomed width: ${imageZoomedWidth}, Image zoomed height: ${imageZoomedHeight}`);
 
     var posx = -Math.round(fromx*pixPerMM * zaRatio);
+    if (zaRatio != ratioW){
+        //not my preferred ratio, so I need to center the image in the canvas
+
+        //width of the shown area, scaled to the zoomed image
+        var zoomed = Math.round(Math.abs(tox - fromx)*pixPerMM * zaRatio);
+        //slide the image to the center of the canvas
+        posx = posx + (canvasWidth - zoomed) / 2;
+    }
+
     //align to the TOP of what you want to zomm in so toY, and Y coords are from the bottom of the image so invert
     var posy = -Math.round((imageOriginalHeight - toy*pixPerMM ) * zaRatio);
+    if (zaRatio != ratioH){
+        //not my preferred ratio, so I need to center the image in the canvas
+
+        //height of the shown area, scaled to the zoomed image
+        var zoomed = Math.round(Math.abs(toy - fromy)*pixPerMM * zaRatio);
+        //slide the image to the center of the canvas
+        posy = posy + (canvasHeight - zoomed) / 2;
+    }
 
     console.log(`Position x: ${posx}, Position y: ${posy}`);
 
+    result.style.backgroundColor = 'white';
     result.style.backgroundImage = `url(${original.src})`;
     result.style.backgroundSize = `${imageZoomedWidth}px ${imageZoomedHeight}px`;
     result.style.backgroundRepeat = 'no-repeat';
