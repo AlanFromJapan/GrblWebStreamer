@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from flask import flash
 from enum import Enum, auto
+import logging
 
 #The type of job
 class JobType(Enum):
@@ -17,10 +18,11 @@ class Job():
     end:datetime = None
     jobType : JobType = JobType.BURN
 
-    def __init__(self, name, jobType : JobType = JobType.BURN) -> None:
+    def __init__(self, name, jobType : JobType = JobType.BURN, details=None) -> None:
         self.name = name
         self.start = datetime.now()
         self.jobType = jobType
+        self.details = details
 
     def durationInSec(self) -> float:
         d = self.duration()
@@ -73,7 +75,12 @@ class BaseNotifier():
         return f"GRBL WebStreamer startup, now listening on http://{ip}"
     
     def _makeStartMsg(self, j:Job):
-        return f"Starting job '{j.name}' in mode {j.jobType.name} at {self.__dateformat.format(j.start)}"
+        expectedDuration = "unknown"
+        try:
+            expectedDuration = j.details.durationPretty() if j.details else "unknown"
+        except Exception as ex:
+            logging.error(f"Error getting expected duration for job '{j.name}': {str(ex)}")
+        return f"Starting job '{j.name}' in mode {j.jobType.name} at {self.__dateformat.format(j.start)}. \nExpected duration: {expectedDuration}."
     
     def _makeCompletionMsg(self, j:Job):
         return f"Completed job '{j.name}' at {self.__dateformat.format(j.end)} in {j.durationPretty()}."

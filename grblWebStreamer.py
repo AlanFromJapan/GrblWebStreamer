@@ -204,7 +204,7 @@ def process_file(filename):
                 pass
             
             #this job
-            j = Job(secure_filename(filename), jobType=jt)
+            j = Job(secure_filename(filename), jobType=jt, details=jobDetails)
 
             #notify
             for x in config.myconfig["notifiers"]: x.NotifyJobStart(j)
