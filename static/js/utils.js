@@ -68,15 +68,15 @@ function zoomImage(original, result, fromx, fromy, tox, toy){
     var pixPerMM = 10; 
 
     //produit en croix: result size is fixed, so ratio of the image zoomed in over the whole size gives the soomed size of the image
-    var canvasWidth = 300; //result.clientWidth;
+    var canvasWidth = result.clientWidth;
     var zoomedInWidth = Math.abs(tox-fromx)*pixPerMM;
-    var imageOriginalWidth = 2000;//original.width;
+    var imageOriginalWidth = original.naturalWidth;
     var imageZoomedWidth = Math.round((canvasWidth*imageOriginalWidth)/zoomedInWidth);
     var ratioW = imageZoomedWidth/imageOriginalWidth;
 
-    var canvasHeight = 300 ; //result.clientWidth;
+    var canvasHeight = result.clientHeight;
     var zoomedInHeight = Math.abs(toy-fromy)*pixPerMM;
-    var imageOriginalHeight = 2000;//original.height;
+    var imageOriginalHeight = original.naturalHeight;
     var imageZoomedHeight = Math.round((canvasHeight*imageOriginalHeight)/zoomedInHeight);
     var ratioH = imageZoomedHeight/imageOriginalHeight;
 
@@ -84,6 +84,7 @@ function zoomImage(original, result, fromx, fromy, tox, toy){
     console.log(`Canvas height: ${canvasHeight}, Image original height: ${imageOriginalHeight}, zoomed in height: ${zoomedInHeight}, image zoomed height: ${imageZoomedHeight}`);
 
     var posx = -Math.round(fromx*pixPerMM * ratioW);
+    //align to the TOP of what you want to zomm in so toY, and Y coords are from the bottom of the image so invert
     var posy = -Math.round((imageOriginalHeight - toy*pixPerMM ) * ratioH);
 
     console.log(`Position x: ${posx}, Position y: ${posy}`);
