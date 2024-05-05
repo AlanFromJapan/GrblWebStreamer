@@ -55,3 +55,44 @@ function highlight(pattern, color) {
                     return '<span style="color:'+color+ ';">' + match + '</span>';
                 });
 }
+
+
+
+function zoomImage(original, result, fromx, fromy, tox, toy){
+    console.log(`Zooming from ${fromx},${fromy} to ${tox},${toy}`);
+
+    var result = document.getElementById(result);
+    var original = document.getElementById(original);
+    
+    //by default images are 10px/mm (should be variable but too much added work for now)
+    var pixPerMM = 10; 
+
+    //produit en croix: result size is fixed, so ratio of the image zoomed in over the whole size gives the soomed size of the image
+    var canvasWidth = 300; //result.clientWidth;
+    var zoomedInWidth = Math.abs(tox-fromx)*pixPerMM;
+    var imageOriginalWidth = 2000;//original.width;
+    var imageZoomedWidth = Math.round((canvasWidth*imageOriginalWidth)/zoomedInWidth);
+    var ratioW = imageZoomedWidth/imageOriginalWidth;
+
+    var canvasHeight = 300 ; //result.clientWidth;
+    var zoomedInHeight = Math.abs(toy-fromy)*pixPerMM;
+    var imageOriginalHeight = 2000;//original.height;
+    var imageZoomedHeight = Math.round((canvasHeight*imageOriginalHeight)/zoomedInHeight);
+    var ratioH = imageZoomedHeight/imageOriginalHeight;
+
+    console.log(`Canvas width: ${canvasWidth}, Image original width: ${imageOriginalWidth}, zoomed in width: ${zoomedInWidth}, image zoomed width: ${imageZoomedWidth}`);
+    console.log(`Canvas height: ${canvasHeight}, Image original height: ${imageOriginalHeight}, zoomed in height: ${zoomedInHeight}, image zoomed height: ${imageZoomedHeight}`);
+
+    var posx = -Math.round(fromx*pixPerMM * ratioW);
+    var posy = -Math.round((imageOriginalHeight - toy*pixPerMM ) * ratioH);
+
+    console.log(`Position x: ${posx}, Position y: ${posy}`);
+
+    result.style.backgroundColor = 'red';
+    result.style.backgroundImage = `url(${original.src})`;
+    result.style.backgroundSize = `${imageZoomedWidth}px ${imageZoomedHeight}px`;
+    result.style.backgroundRepeat = 'no-repeat';
+    result.style.backgroundPosition = `${posx}px ${posy}px`;
+
+    original.style.display = 'none';
+}

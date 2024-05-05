@@ -13,7 +13,8 @@
         <td>
             <h2>Preview thumbnail</h2>
             <a href="/thumbnails/{{filename}}.png" target="_blank">
-                <img src="/thumbnails/{{filename}}.png" class="thumbnail" alt="Click to see in full"/>
+                <img id="imgOriginal" src="/thumbnails/{{filename}}.png" class="thumbnail" alt="Click to see in full"/>
+                <img id="imgResult" alt="Click to see in full" style="width: 300px; height: 300px;" />
             </a>
             <div>
                 <h3>Job details</h3>
@@ -23,6 +24,10 @@
                     <li>📏Size: {{jobDetails.fromXY}} - {{jobDetails.toXY}} mm</li>
                     <li>📅Upload date: {{jobDetails.submission_date}}</li>
                 </ul>
+
+                <script lang="javascript">
+                    zoomImage("imgOriginal", "imgResult", {{jobDetails.fromXY[0]}},  {{jobDetails.fromXY[1]}}, {{jobDetails.toXY[0]}}, {{jobDetails.toXY[1]}} );
+                </script>
                 {% else %}
                 <p>Job details not available</p>
                 {% endif %}
