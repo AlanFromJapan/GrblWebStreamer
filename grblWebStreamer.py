@@ -5,7 +5,7 @@ from  notifiers.baseNotifier import Job, JobType
 import device
 from persistence.db import LaserJobDB
 
-from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for
+from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for, current_app
 from datetime import datetime, timedelta
 import sys
 import os
@@ -17,13 +17,14 @@ import socket
 from werkzeug.serving import get_interface_ip
 from markupsafe import escape
 
+#Blueprints
+from bp_device.device import bp_device
+
+
 ############################ BEFORE ANYTHING ELSE #################################
 #logging
 logging.basicConfig(filename=config.myconfig["logfile"], level=config.myconfig.get("log level", logging.DEBUG), format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Starting app")
-
-latest_file = None
-D = device.Device(config.myconfig["device port"])
 
 #make sure upload folder exists
 if not os.path.exists(config.myconfig["upload folder"]):
@@ -33,11 +34,29 @@ if not os.path.exists(config.myconfig["upload folder"]):
 app = Flask(__name__, static_url_path='')
 app.secret_key = config.myconfig["secret_key"]
 
+#register the blueprint
+app.register_blueprint(bp_device)
+
 ALLOWED_EXTENSIONS = set(['nc', 'gc'])
 
 # return if filename is in the list of acceptable files
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+#The device
+D = device.Device(config.myconfig["device port"])
+with app.app_context():
+    current_app.D = D
+    current_app.latest_file = None
+
+def latestFile() -> str:
+    return current_app.latest_file
+    
+def getDevice() -> device.Device:
+    return current_app.D
+        
 
 
 #Makes a thumnail for a GRBL file
@@ -72,19 +91,18 @@ def flask_ready():
 @app.route('/')
 @app.route('/home')
 def homepage():    
-    global latest_file
 
     # #not logged in? go away
     # if None == request.cookies.get('username'):
     #     return redirect("login")
-    return render_template("home01.html", pagename="Home", latest=latest_file)
+    
+    return render_template("home01.html", pagename="Home", latest=latestFile())
 
 
 #---------------------------------------------------------------------------------------
 #handler for file upload that redirect to file process (not a page)
 @app.route('/upload-file', methods=['POST'])
 def upload_file():    
-    global latest_file
         
     if request.method == 'POST':
         # check if the post request has the file part
@@ -150,9 +168,7 @@ def fetch_files_connectors():
 #---------------------------------------------------------------------------------------
 #The "main" page to process a file
 @app.route('/process-file/<filename>', methods=['GET','POST'])
-def process_file(filename):    
-    global latest_file
-    
+def process_file(filename):      
     fileOnDisk = os.path.join(config.myconfig['upload folder'], secure_filename(filename))
 
     #exists?
@@ -161,8 +177,8 @@ def process_file(filename):
         logging.error(f"process_file(): [{fileOnDisk}] not found")
         return redirect("/")
 
-    #remember latest
-    latest_file = filename
+    #remember latest    
+    current_app.latest_file = filename
 
     jobDetails = None
     try:
@@ -179,7 +195,7 @@ def process_file(filename):
                 grblUtils.deleteThumbnailForJob(filename)
                 os.remove(fileOnDisk)
                 flash(f'Successfully deleted file [{escape(filename)}]', "success")
-                latest_file = None
+                current_app.latest_file = None
                 return redirect("/")
             except Exception as ex:
                 flash(f'Failed deleting file [{escape(filename)}]', "error")
@@ -190,7 +206,7 @@ def process_file(filename):
         
         elif request.form["action"] == "stop":
             #STOP!
-            D.emergencyStopRequested = True
+            getDevice().emergencyStopRequested = True
             flash(f"Emergency stop requested. Check device status.", "success")
 
         else:
@@ -212,19 +228,19 @@ def process_file(filename):
             try:
                 if request.form["action"] == "simulate":
                     #do the job but with no laser power
-                    D.simulate(fileOnDisk, asynchronous=True, job = j)
+                    getDevice().simulate(fileOnDisk, asynchronous=True, job = j)
 
                 elif request.form["action"] == "burn":
                     #the real thing
-                    D.burn(fileOnDisk, asynchronous=True, job = j)
+                    getDevice().burn(fileOnDisk, asynchronous=True, job = j)
                     
                 elif request.form["action"] == "frame":
                     #frame the workspace SYNCHRONOUSLY
-                    D.frame(fileOnDisk, asynchronous=True, job = j)
+                    getDevice().frame(fileOnDisk, asynchronous=True, job = j)
 
                 elif request.form["action"] == "frameCornerPause":
                     #frame the workspace SYNCHRONOUSLY with a few second pause at each corner
-                    D.frameWithCornerPause(fileOnDisk, asynchronous=True, job = j)
+                    getDevice().frameWithCornerPause(fileOnDisk, asynchronous=True, job = j)
                     
                 else:
                     flash("Unknow or TODO implement", "error")
@@ -243,72 +259,11 @@ def process_file(filename):
     
     filesize = float(os.path.getsize(fileOnDisk)) / 1000.0
         
-    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=latest_file, jobDetails=jobDetails)
+    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=latestFile(), jobDetails=jobDetails)
     
 
 
 
-#---------------------------------------------------------------------------------------
-#The page to play with the device
-@app.route('/device', methods=['GET','POST'])
-def device_page():    
-    global latest_file
-    
-    #POST BACK POST BACK POST BACK
-    if request.method == 'POST':
-        # Change port
-        if request.form["action"] == "change-port":
-            p = request.form["newtarget"]
-            p = p[:p.index(" ")]
-            D.reconnect(p)
-            flash(f"Updated in use target serial port to '{p}'.", "success")
-        #Send command
-        elif request.form["action"] == "cmd":
-            res = D.sendCommand(request.form["cmd"] )
-            flash(f"Sent command '{ request.form['cmd'] }', got response '{ res }'")
-        #Send Resume command
-        elif request.form["action"] == "resume":
-            res = D.sendCommand(device.WellKnownCommands.CMD_RESUME.value )
-            flash(f"Sent RESUME command (~), got response '{ res }'.\nCheck if device is in IDLE status now.")
-
-            res = D.sendCommand(device.WellKnownCommands.CMD_STATUS.value )
-            flash(f"Sent command '{ device.WellKnownCommands.CMD_STATUS.value }', got response '{ res }'")
-        #Send status
-        elif request.form["action"] == "status":
-            res = D.sendCommand(device.WellKnownCommands.CMD_STATUS.value )
-            flash(f"Sent command '{ device.WellKnownCommands.CMD_STATUS.value }', got response '{ res }'")
-        #Send goto orign
-        elif request.form["action"] == "goto-origin":
-            res = D.sendCommand(device.WellKnownCommands.CMD_GOTO_ORIGIN.value )
-            flash(f"Sent command '{ device.WellKnownCommands.CMD_GOTO_ORIGIN.value }', got response '{ res }'")
-        #Disconnect
-        elif request.form["action"] == "disconnect":
-            D.disconnect()
-            flash(f"Disconnected from '{ D.port }'", "success")
-        else:
-            flash("Unknow or TODO implement", "error")
-
-    #Page generation
-    body = ''
-
-    body += f'<li>Current target Serial port: { D.port }</li>'
-
-    ports = serialUtils.listAvailableSerialPorts() 
-    if len(ports) > 0:
-        body += "<ul>"
-        for p in ports:
-            body += f'<li>Currently available port: { p }</li>'
-
-        body += "</ul>"
-
-        if not D.port in [p[:p.index(" ")] for p in ports]:
-            flash("Target port is not available: change the port or check connections.", "error")    
-    else:
-        flash("No opened serial port found. Is laser/CNC connected?", "error")
-
-    body = """<ul>""" + body + "</ul>"
-
-    return render_template("device01.html", pagename="Device", settings=body, ports=ports, latest=latest_file)
 
 
 
@@ -320,7 +275,6 @@ def getGRBLfiles():
 #List the recently sent files
 @app.route('/replay', methods=['GET','POST'])
 def replay_page():    
-    global latest_file
 
     #list of files
     l = getGRBLfiles()
@@ -373,7 +327,7 @@ Click to (re)process uploaded files:"""
     body += """<br/>
 Remember: go to the <a href="/">Home page</a> to upload a script!"""
 
-    return render_template("replay01.html", pagename="Replay", pagecontent=body, latest=latest_file)
+    return render_template("replay01.html", pagename="Replay", pagecontent=body, latest=latestFile())
     
 
 
@@ -382,7 +336,6 @@ Remember: go to the <a href="/">Home page</a> to upload a script!"""
 #The page to turn off the PC
 @app.route('/OS', methods=['GET','POST'])
 def os_page():    
-    global latest_file
     
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
@@ -397,7 +350,7 @@ def os_page():
         else:
             flash("Unknow or TODO implement", "error")    
     
-    return render_template("os01.html", pagename="OS", latest=latest_file)
+    return render_template("os01.html", pagename="OS", latest=latestFile())
 
 
 
@@ -407,7 +360,6 @@ def os_page():
 #Shows the log file
 @app.route('/logs', methods=['GET','POST'])
 def logs_page():    
-    global latest_file
 
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
@@ -434,7 +386,7 @@ def logs_page():
 
     body += "</pre>"
 
-    return render_template("template01.html", pagename="Logs", pagecontent=body, latest=latest_file)
+    return render_template("template01.html", pagename="Logs", pagecontent=body, latest=latestFile())
     
 
 
@@ -443,7 +395,7 @@ def logs_page():
 #Returns current status (Webservice - NOT A PAGE)
 @app.route('/status')
 def status_ws():
-    stat = f"{{ \"status\": \"{D.status.name}\", \"port\": \"{D.port}\" }}"
+    stat = f"{{ \"status\": \"{getDevice().status.name}\", \"port\": \"{getDevice().port}\" }}"
     return stat
 
 
