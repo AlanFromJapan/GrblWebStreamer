@@ -18,24 +18,6 @@ def allowed_file(filename):
 
 
 
-############################ Thumbnail generation ###############################        
-
-
-#Makes a thumnail for a GRBL file
-def genThumbnail(fileFullPath):
-    #try to make a thumbnail img
-    filename = secure_filename(os.path.basename(fileFullPath))
-    try:
-        stats = grblUtils.createThumbnailForJob(fileFullPath)
-        flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
-        return stats
-    except Exception as ex:
-        flash(f'Failed creating thumbnail for [{escape(filename)}] with message "{str(ex)}"', "error")
-
-        logging.error ("error on making thumbnail: " + str(ex))
-
-
-
 #---------------------------------------------------------------------------------------
 #landing page
 @bp_home.route('/')
@@ -77,7 +59,7 @@ def upload_file():
             flash(f'Successfully uploaded file [{escape(filename)}]', "success")
 
             #try to make a thumbnail img
-            stats = genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+            stats = grblUtils.genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
 
             logging.info(f"{filename} > stats: {stats}")
 
@@ -85,7 +67,7 @@ def upload_file():
             j = LaserJobDB(filename, stats=stats)
             LaserJobDB.record_job(j)
 
-            return redirect(url_for('process_file', filename=filename))
+            return redirect(url_for('bp_processOne.process_file', filename=filename))
         else:
 
             flash(f"Forbidden file extension, use one of {ALLOWED_EXTENSIONS}", "error")
@@ -105,7 +87,7 @@ def fetch_files_connectors():
                     count = count + 1
                     flash(f"Successfully fetched file [{escape(filename)}]", "success")
                     #try to make a thumbnail img
-                    genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+                    grblUtils.genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
                 else:
                     break
         flash(f"Done fetching {count} file(s) from connectors.", "info")

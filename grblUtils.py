@@ -8,6 +8,9 @@ import logging
 import grbl2image.grbl2image as G2I
 from PIL import Image
 
+from werkzeug.utils import secure_filename
+from flask import flash, escape
+
 REGEX_LIGHTBURN_BOUNDS=";\s+Bounds: X([0-9\.]+) Y([0-9\.]+) to X([0-9\.]+) Y([0-9\.]+)"
 REGEX_DEVICE_STATUS = "<(?P<state>[^:|]+)(?::||).*"
 
@@ -159,3 +162,20 @@ def getDeviceStatus():
             return "Unknown"            
     else:
         return "Not Ready or Busy?"
+    
+
+############################ Thumbnail generation ###############################        
+
+
+#Makes a thumnail for a GRBL file
+def genThumbnail(fileFullPath):
+    #try to make a thumbnail img
+    filename = secure_filename(os.path.basename(fileFullPath))
+    try:
+        stats = createThumbnailForJob(fileFullPath)
+        flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
+        return stats
+    except Exception as ex:
+        flash(f'Failed creating thumbnail for [{escape(filename)}] with message "{str(ex)}"', "error")
+
+        logging.error ("error on making thumbnail: " + str(ex))
