@@ -19,7 +19,7 @@ from markupsafe import escape
 
 #Blueprints
 from bp_device.device import bp_device
-
+from bp_home.bp_home import bp_home
 
 ############################ BEFORE ANYTHING ELSE #################################
 #logging
@@ -36,41 +36,19 @@ app.secret_key = config.myconfig["secret_key"]
 
 #register the blueprint
 app.register_blueprint(bp_device)
-
-ALLOWED_EXTENSIONS = set(['nc', 'gc'])
-
-# return if filename is in the list of acceptable files
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+app.register_blueprint(bp_home)
 
 
 
-#The device
-D = device.Device(config.myconfig["device port"])
+
+
+#The shared variables to be stored in the app context
 with app.app_context():
-    current_app.D = D
+    current_app.D = device.Device(config.myconfig["device port"])
     current_app.latest_file = None
 
-def latestFile() -> str:
-    return current_app.latest_file
-    
-def getDevice() -> device.Device:
-    return current_app.D
-        
 
 
-#Makes a thumnail for a GRBL file
-def genThumbnail(fileFullPath):
-    #try to make a thumbnail img
-    filename = secure_filename(os.path.basename(fileFullPath))
-    try:
-        stats = grblUtils.createThumbnailForJob(fileFullPath)
-        flash(f'Successfully created thumbnail for [{escape(filename)}]', "success")
-        return stats
-    except Exception as ex:
-        flash(f'Failed creating thumbnail for [{escape(filename)}] with message "{str(ex)}"', "error")
-
-        logging.error ("error on making thumbnail: " + str(ex))
 
 
 ############################ App Events ###############################
@@ -85,84 +63,6 @@ def flask_ready():
             pass
 
 ############################ Web requests ###############################
-
-#---------------------------------------------------------------------------------------
-#landing page
-@app.route('/')
-@app.route('/home')
-def homepage():    
-
-    # #not logged in? go away
-    # if None == request.cookies.get('username'):
-    #     return redirect("login")
-    
-    return render_template("home01.html", pagename="Home", latest=latestFile())
-
-
-#---------------------------------------------------------------------------------------
-#handler for file upload that redirect to file process (not a page)
-@app.route('/upload-file', methods=['POST'])
-def upload_file():    
-        
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part', "error")
-            return redirect("/")
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file', "error")
-            return redirect("/")
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            
-            #force extension to .nc
-            filename = filename[:filename.rfind(".")] + ".nc"
-
-            file.save(os.path.join(config.myconfig['upload folder'], filename))
-
-            flash(f'Successfully uploaded file [{escape(filename)}]', "success")
-
-            #try to make a thumbnail img
-            stats = genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
-
-            logging.info(f"{filename} > stats: {stats}")
-
-            #save in DB
-            j = LaserJobDB(filename, stats=stats)
-            LaserJobDB.record_job(j)
-
-            return redirect(url_for('process_file', filename=filename))
-        else:
-
-            flash(f"Forbidden file extension, use one of {ALLOWED_EXTENSIONS}", "error")
-            return redirect("/")
-
-
-#handler for files fetching from all the connectors. As get too so can get wget-cron-ed easily. Useful maybe?
-@app.route('/fetch-file-connectors', methods=['POST', 'GET'])
-def fetch_files_connectors():    
-    try:
-        count = 0
-        for conn in config.myconfig.get("connectors", []):
-            flash(f"Fetching files from { str(conn) } ...", "info")
-            while True:            
-                filename = conn.fetchLatest()
-                if filename:
-                    count = count + 1
-                    flash(f"Successfully fetched file [{escape(filename)}]", "success")
-                    #try to make a thumbnail img
-                    genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
-                else:
-                    break
-        flash(f"Done fetching {count} file(s) from connectors.", "info")
-    except Exception as ex:
-        logging.error(f"ERROR while fetching files from connectors with message '{ex}'")
-        flash(f"ERROR while fetching files from connectors with message '{ex}'", "error")
-    
-    return redirect("/")
 
 
 #---------------------------------------------------------------------------------------
@@ -206,7 +106,7 @@ def process_file(filename):
         
         elif request.form["action"] == "stop":
             #STOP!
-            getDevice().emergencyStopRequested = True
+            current_app.D.emergencyStopRequested = True
             flash(f"Emergency stop requested. Check device status.", "success")
 
         else:
@@ -228,19 +128,19 @@ def process_file(filename):
             try:
                 if request.form["action"] == "simulate":
                     #do the job but with no laser power
-                    getDevice().simulate(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.simulate(fileOnDisk, asynchronous=True, job = j)
 
                 elif request.form["action"] == "burn":
                     #the real thing
-                    getDevice().burn(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.burn(fileOnDisk, asynchronous=True, job = j)
                     
                 elif request.form["action"] == "frame":
                     #frame the workspace SYNCHRONOUSLY
-                    getDevice().frame(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.frame(fileOnDisk, asynchronous=True, job = j)
 
                 elif request.form["action"] == "frameCornerPause":
                     #frame the workspace SYNCHRONOUSLY with a few second pause at each corner
-                    getDevice().frameWithCornerPause(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.frameWithCornerPause(fileOnDisk, asynchronous=True, job = j)
                     
                 else:
                     flash("Unknow or TODO implement", "error")
@@ -259,7 +159,7 @@ def process_file(filename):
     
     filesize = float(os.path.getsize(fileOnDisk)) / 1000.0
         
-    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=latestFile(), jobDetails=jobDetails)
+    return render_template("process01.html", pagename=f"Process file [{escape(filename)}]", filename=filename, filebody=body, filesize=f"{filesize:0.1f}", latest=current_app.latest_file, jobDetails=jobDetails)
     
 
 
@@ -327,7 +227,7 @@ Click to (re)process uploaded files:"""
     body += """<br/>
 Remember: go to the <a href="/">Home page</a> to upload a script!"""
 
-    return render_template("replay01.html", pagename="Replay", pagecontent=body, latest=latestFile())
+    return render_template("replay01.html", pagename="Replay", pagecontent=body, latest=current_app.latest_file)
     
 
 
@@ -350,7 +250,7 @@ def os_page():
         else:
             flash("Unknow or TODO implement", "error")    
     
-    return render_template("os01.html", pagename="OS", latest=latestFile())
+    return render_template("os01.html", pagename="OS", latest=current_app.latest_file)
 
 
 
@@ -386,7 +286,7 @@ def logs_page():
 
     body += "</pre>"
 
-    return render_template("template01.html", pagename="Logs", pagecontent=body, latest=latestFile())
+    return render_template("template01.html", pagename="Logs", pagecontent=body, latest=current_app.latest_file)
     
 
 
@@ -395,7 +295,7 @@ def logs_page():
 #Returns current status (Webservice - NOT A PAGE)
 @app.route('/status')
 def status_ws():
-    stat = f"{{ \"status\": \"{getDevice().status.name}\", \"port\": \"{getDevice().port}\" }}"
+    stat = f"{{ \"status\": \"{current_app.D.status.name}\", \"port\": \"{current_app.D.port}\" }}"
     return stat
 
 
