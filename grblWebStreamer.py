@@ -1,21 +1,14 @@
 import config
-import serialUtils
-import grblUtils
-from  notifiers.baseNotifier import Job, JobType
 import device
 from persistence.db import LaserJobDB
 
-from flask import Flask, flash, request, send_file, render_template, abort, redirect, make_response, url_for, current_app
-from datetime import datetime, timedelta
+from flask import Flask, current_app
 import sys
 import os
 import logging
-
-from werkzeug.utils import secure_filename
 import socket
 
 from werkzeug.serving import get_interface_ip
-from markupsafe import escape
 
 #Blueprints
 from bp_device.device import bp_device
@@ -23,6 +16,7 @@ from bp_home.bp_home import bp_home
 from bp_os.bp_os import bp_os
 from bp_replay.bp_replay import bp_replay
 from bp_processOne.bp_processOne import bp_processOne
+from bp_api.bp_api import bp_api
 
 ############################ BEFORE ANYTHING ELSE #################################
 #logging
@@ -43,7 +37,7 @@ app.register_blueprint(bp_home)
 app.register_blueprint(bp_os)
 app.register_blueprint(bp_replay)
 app.register_blueprint(bp_processOne)
-
+app.register_blueprint(bp_api)
 
 
 
@@ -51,9 +45,6 @@ app.register_blueprint(bp_processOne)
 with app.app_context():
     current_app.D = device.Device(config.myconfig["device port"])
     current_app.latest_file = None
-
-
-
 
 
 ############################ App Events ###############################
@@ -66,23 +57,6 @@ def flask_ready():
             #ignore
             #print(ex)
             pass
-
-############################ Web requests ###############################
-
-
-
-
-
-
-
-
-#---------------------------------------------------------------------------------------
-#Returns current status (Webservice - NOT A PAGE)
-@app.route('/status')
-def status_ws():
-    stat = f"{{ \"status\": \"{current_app.D.status.name}\", \"port\": \"{current_app.D.port}\" }}"
-    return stat
-
 
 ########################################################################################
 ## Main entry point
