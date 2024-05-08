@@ -1,9 +1,5 @@
-from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for, escape
-from werkzeug.utils import secure_filename
+from flask import Blueprint, render_template, current_app, request, flash
 import os
-import logging
-from persistence.db import LaserJobDB
-import grblUtils
 import config
 
 bp_os = Blueprint('bp_os', __name__)
