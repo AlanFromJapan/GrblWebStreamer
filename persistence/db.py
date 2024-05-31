@@ -2,6 +2,7 @@ import sqlite3
 import datetime
 from threading import Lock
 import grbl2image.grbl2image as G2I
+import os
 
 class LaserJobDB:
     __lock = Lock()
@@ -10,10 +11,15 @@ class LaserJobDB:
 
     @classmethod
     def initialize(cls, db_file):
-        #check_same_thread=False to allow jobs (on worker thread) to use the connection (static, that was created on MAIN thread)
-        LaserJobDB.__conn = sqlite3.connect(db_file, check_same_thread=False)
-        LaserJobDB.__cursor = LaserJobDB.__conn.cursor()
-        LaserJobDB.create_table()
+        try:
+            #check_same_thread=False to allow jobs (on worker thread) to use the connection (static, that was created on MAIN thread)
+            LaserJobDB.__conn = sqlite3.connect(db_file, check_same_thread=False)
+            LaserJobDB.__cursor = LaserJobDB.__conn.cursor()
+            LaserJobDB.create_table()
+        except sqlite3.OperationalError:
+            print(f"DB File not found: '{db_file}' [current dir: {os.getcwd()}]")
+            #farewell everyone
+            raise
 
 
     @classmethod
