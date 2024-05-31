@@ -37,6 +37,7 @@ echo "#################################################################"
 
 sudo mkdir -p /var/local/GrblWebStreamer/logs
 sudo mkdir -p /var/local/GrblWebStreamer/uploads
+sudo mkdir -p /var/local/GrblWebStreamer/db
 sudo chgrp -R pi /var/local/GrblWebStreamer
 sudo chmod -R g+rw /var/local/GrblWebStreamer
 
