@@ -31,8 +31,8 @@ def process_file(filename):
         jobDetails = LaserJobDB.get_job(filename)
     except Exception as ex:
         flash("Error while fetching job details from DB", "error")
-        pass
-
+        logging.error(f"ERROR while fetching job details from DB for {filename} with message '{ex}'")
+        
     #POST BACK POST BACK POST BACK
     if request.method == 'POST':
         if request.form["action"] == "deletefile":
@@ -47,13 +47,22 @@ def process_file(filename):
                 flash(f'Failed deleting file [{escape(filename)}]', "error")
                 logging.error(f"ERROR while deleting file {filename} with message '{ex}'")
         elif request.form["action"] == "regen_thumbnail":
-            #try to (re)make a thumbnail img
-            grblUtils.genThumbnail(fileOnDisk)
-        
+            try:
+                #try to (re)make a thumbnail img
+                stats = grblUtils.genThumbnail(fileOnDisk)
+
+                logging.info(f"{filename} > stats: {stats}")
+
+                #save in DB
+                j = LaserJobDB(filename, stats=stats)
+                LaserJobDB.record_job(j)
+            except Exception as ex:
+                flash("Error while generating thumbnail or saving job details", "error")
+                logging.error(f"ERROR while generating thumbnail or saving job details for {filename} with message '{ex}'")
         elif request.form["action"] == "stop":
             #STOP!
             current_app.D.emergencyStopRequested = True
-            flash(f"Emergency stop requested. Check device status.", "success")
+            flash("Emergency stop requested. Check device status.", "success")
 
         else:
             # START A JOB 
@@ -63,7 +72,7 @@ def process_file(filename):
                 #too lazy to check possible values etc. 
                 jt = JobType[request.form["action"].upper()]
             except:
-                pass
+                logging.error(f"Unknown job type {request.form['action']}")
             
             #this job
             j = Job(secure_filename(filename), jobType=jt, details=jobDetails)

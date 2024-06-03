@@ -86,8 +86,14 @@ def fetch_files_connectors():
                 if filename:
                     count = count + 1
                     flash(f"Successfully fetched file [{escape(filename)}]", "success")
-                    #try to make a thumbnail img
-                    grblUtils.genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+                    #try to make a thumbnail img           
+                    stats = grblUtils.genThumbnail(os.path.join(config.myconfig['upload folder'], filename))
+
+                    logging.info(f"{filename} > stats: {stats}")
+
+                    #save in DB
+                    j = LaserJobDB(filename, stats=stats)
+                    LaserJobDB.record_job(j)
                 else:
                     break
         flash(f"Done fetching {count} file(s) from connectors.", "info")
