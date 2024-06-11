@@ -3,6 +3,7 @@ import datetime
 from threading import Lock
 import grbl2image.grbl2image as G2I
 import os
+import math
 
 class LaserJobDB:
     __lock = Lock()
@@ -77,7 +78,9 @@ class LaserJobDB:
             self.estimated_duration = duration
             self.fromXY = fromXY
             self.toXY = toXY
+        self.area = (math.ceil(abs(self.toXY[0] - self.fromXY[0])), math.ceil(abs(self.toXY[1] - self.fromXY[1])))
         
+
     def record_job(self):
         with LaserJobDB.__lock:
             LaserJobDB.__cursor.execute('''
@@ -85,6 +88,7 @@ class LaserJobDB:
                 VALUES (?, ?, ?, ?, ?)
             ''', (self.name, datetime.datetime.now(), f"{self.estimated_duration:0.1f}", f"{self.fromXY[0]:0.1f},{self.fromXY[1]:0.1f}", f"{self.toXY[0]:0.1f},{self.toXY[1]:0.1f}"))
             LaserJobDB.__conn.commit()
+
 
     #Couldn't find an easy way to NOT replicate this function from baseNotifier.py I hate copy paste but I see no (easy) other way here
     def durationPretty(self) -> str:
@@ -101,3 +105,4 @@ class LaserJobDB:
             s = str(d)
 
         return s
+    

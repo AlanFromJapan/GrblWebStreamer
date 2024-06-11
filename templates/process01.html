@@ -21,6 +21,7 @@
                 {% if jobDetails %}
                 <ul>
                     <li><strong>⏲️Duration: {{jobDetails.durationPretty()}}</strong></li>
+                    <li><strong>🔲Material minimum size:</strong> {{ jobDetails.area[0] }} mm x {{ jobDetails.area[1] }} mm</li>
                     <li><strong>📏Work area:</strong> {{jobDetails.fromXY}} - {{jobDetails.toXY}} mm</li>
                     <li><strong>💾File size:</strong> {{ filesize }}kB</li>
                     <li><strong>📅Upload:</strong> {{jobDetails.submission_date}}</li>
@@ -127,7 +128,7 @@ function updateButtons(){
     btnFrameCorners.disabled = panade || !en;
     btnSimulate.disabled = panade || !en;
     btnBurn.disabled = panade || !en;
-    btnDelete.disabled = panade || !en;
+    //btnDelete.disabled = panade || !en;
     //btnRegenThumb.disabled = panade || !en;
 
     //REVERSE logic for this one
