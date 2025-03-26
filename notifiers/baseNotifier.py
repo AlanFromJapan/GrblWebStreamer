@@ -57,7 +57,7 @@ class Job():
 
 #Base class for Notifiers, prints to stdout
 class BaseNotifier():
-    __dateformat = '{0:%H:%M:%S}'
+    __dateformat = '{0:%H:%M}'
 
     def NotifyServerReady (self, ip:str = "<unknown IP>"):
         print(self._makeReadyMsg(ip))
@@ -80,7 +80,7 @@ class BaseNotifier():
             expectedDuration = j.details.durationPretty() if j.details else "unknown"
         except Exception as ex:
             logging.error(f"Error getting expected duration for job '{j.name}': {str(ex)}")
-        return f"Starting job '{j.name}' in mode {j.jobType.name} at {self.__dateformat.format(j.start)}. \nExpected duration: {expectedDuration}."
+        return f"Starting job '{j.name}' in mode {j.jobType.name} at {self.__dateformat.format(j.start)}. \nExpected duration: {expectedDuration}.\nExpected completion at {self.__dateformat.format(j.end)}."
     
     def _makeCompletionMsg(self, j:Job):
         return f"Completed job '{j.name}' at {self.__dateformat.format(j.end)} in {j.durationPretty()}."
