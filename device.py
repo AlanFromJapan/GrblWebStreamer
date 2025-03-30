@@ -23,13 +23,13 @@ class WellKnownCommands(Enum):
 
 # Methods are sync unless stated otherwise
 class Device:
-    port: str = None
-    status = DeviceStatus.NOT_FOUND
-    emergencyStopRequested : bool = False
+
     
     #constructor
-    def __init__(self, port):
+    def __init__(self, port : str):
         self.port = port
+        self.status = DeviceStatus.NOT_FOUND
+        self.emergency_stop_requested  = False
 
 
     def __notifyAll (self, job : Job):
@@ -65,7 +65,7 @@ class Device:
     #-------------------------------------------------------------
     def burn (self, fileOnDisk, asynchronous = False, job : Job = None):
         self.status = DeviceStatus.BUSY
-        self.emergencyStopRequested = False
+        self.emergency_stop_requested = False
         if asynchronous:
             threading.Thread(target=self.__burnAsync, args=(fileOnDisk, job, )).start()
         else:
@@ -79,17 +79,17 @@ class Device:
             linemodif.append(serialUtils.linemodifier_delayCommands)
 
         serialUtils.processFile(self.port, fileOnDisk, lineModifiers=linemodif, forceStopCheck=self.__checkForJobCancellation)
-        if self.emergencyStopRequested:
+        if self.emergency_stop_requested:
             #send outro
             grblUtils.sendOutroOnly(self.port)
-        self.emergencyStopRequested = False
+        self.emergency_stop_requested = False
         self.__completeJob(job)
 
 
     #called by the serial utils to check if a job cancellation was requested
     def __checkForJobCancellation (self):
         #change status in the __burnAsync method
-        return self.emergencyStopRequested
+        return self.emergency_stop_requested
 
 
     #-------------------------------------------------------------
