@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from flask import flash
 from enum import Enum, auto
 import logging
+from persistence.db import LaserJobDB
 
 #The type of job
 class JobType(Enum):
@@ -18,7 +19,7 @@ class Job():
     end:datetime = None
     jobType : JobType = JobType.BURN
 
-    def __init__(self, name, jobType : JobType = JobType.BURN, details=None) -> None:
+    def __init__(self, name, jobType : JobType = JobType.BURN, details: LaserJobDB =None) -> None:
         self.name = name
         self.start = datetime.now()
         self.jobType = jobType
@@ -80,7 +81,9 @@ class BaseNotifier():
             expectedDuration = j.details.durationPretty() if j.details else "unknown"
         except Exception as ex:
             logging.error(f"Error getting expected duration for job '{j.name}': {str(ex)}")
-        return f"Starting job '{j.name}' in mode {j.jobType.name} at {self.__dateformat.format(j.start)}. \nExpected duration: {expectedDuration}.\nExpected completion at {self.__dateformat.format(j.end)}."
+        
+        expected_end = j.start + timedelta(seconds=j.details.estimated_duration) if j.details else None
+        return f"Starting job '{j.name}' in mode {j.jobType.name} at {self.__dateformat.format(j.start)}. \nExpected duration: {expectedDuration}.\nExpected completion at {self.__dateformat.format(expected_end)}."
     
     def _makeCompletionMsg(self, j:Job):
         return f"Completed job '{j.name}' at {self.__dateformat.format(j.end)} in {j.durationPretty()}."
