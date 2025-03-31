@@ -43,7 +43,8 @@ app.register_blueprint(bp_api)
 
 #The shared variables to be stored in the app context
 with app.app_context():
-    current_app.D = device.Device(config.myconfig["device port"])
+    if not hasattr(current_app, "D") or current_app.D is None:
+        current_app.D = device.Device(config.myconfig["device port"])
     current_app.latest_file = None
 
 
@@ -78,6 +79,10 @@ If you don't provide the *.pem files it will start as an HTTP app. You need to p
         #notif of the startup
         if "notif on startup" in config.myconfig and config.myconfig["notif on startup"]:
             flask_ready()
+
+        #try to find the device
+        with app.app_context():
+            device.Device.start_thread_check_for_device(current_app.D)
 
         #run as HTTPS?
         if len(sys.argv) == 3:

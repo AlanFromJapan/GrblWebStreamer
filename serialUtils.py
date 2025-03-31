@@ -26,8 +26,15 @@ __STATUS = ConnectionStatus.NOT_CONNECTED
 ##############################################################################################################################
 
 #returns the text list of all the available comports
-def listAvailableSerialPorts():
-    return [str(port) for port in serial.tools.list_ports.comports()]
+def listAvailableSerialPorts(portname_only = False):
+    l = [str(port) for port in serial.tools.list_ports.comports()]
+
+    #ports on linux are in format "/dev/ttyUSB0 - USB Serial Port"
+    #portname_only = True will return only the "/dev/ttyUSB0" part
+    if portname_only:
+        l = [p[:p.index(" ")] for p in l]
+
+    return l
 
 
 
@@ -38,11 +45,13 @@ def connect(port, forceDisconnect = False):
     #rightly connected?
     if __PORT == port and __SERIAL != None :
         #nothing to do
+        logging.debug("Already connected to the right port.")
         return
 
     #connected to wrong port?
     if __PORT != '' or __SERIAL != None:        
         #first DIS-connect
+        logging.debug("Disconnecting from current port.")
 
         if __STATUS in [ConnectionStatus.BUSY] and not forceDisconnect:
             logging.error("Status error: device is busy, cannot disconnect (try force).")
@@ -50,10 +59,12 @@ def connect(port, forceDisconnect = False):
 
         disconnect()
         
+    logging.debug(f"Connecting to new port= {port}")
     #not connected
     __SERIAL = serial.Serial(port,BAUDRATE)
     __PORT = port
 
+    logging.debug(f"Connected to port= {port}")
     # Wait for grbl to initialize and flush startup text in serial input
     time.sleep(2)
     __SERIAL.flushInput()

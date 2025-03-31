@@ -3,9 +3,13 @@ import grblUtils
 import config
 import threading
 from  notifiers.baseNotifier import Job
+from werkzeug.serving import is_running_from_reloader
 
 import logging
 from enum import Enum
+
+import threading
+import time
 
 class DeviceStatus(Enum):
     IDLE = 1
@@ -21,15 +25,28 @@ class WellKnownCommands(Enum):
     CMD_RESUME = "~" #to resume after a HOLD state
 
 
+
 # Methods are sync unless stated otherwise
 class Device:
-
+    __CHECKER_THREAD_LOCK = threading.Lock()
     
     #constructor
     def __init__(self, port : str):
         self.port = port
         self.status = DeviceStatus.NOT_FOUND
         self.emergency_stop_requested  = False
+
+        self.checker_thread = None
+        self.checker_thread_killed = False
+
+
+    #destructor
+    def __del__(self) -> None:
+        if self.checker_thread is not None:
+            logging.warning(f"Checker thread to be killed for thread {self.checker_thread}")   
+            self.checker_thread_killed = True
+            self.checker_thread.join()
+            logging.warning(f"Checker thread killed")   
 
 
     def __notifyAll (self, job : Job):
@@ -139,15 +156,67 @@ class Device:
 
 
     #-------------------------------------------------------------
-    def reconnect(self, port) -> DeviceStatus:
-        self.disconnect()
+    def connect(self, port : str = None) -> DeviceStatus:
+        if port is None:
+            port = self.port
 
-        self.port = port
+        if not self.status in [DeviceStatus.NOT_FOUND, DeviceStatus.ERROR]:
+            logging.warning(f"Device.connect() : wrong status {self.status}")
+            #no change
+            return self.status
+
+        #not need to try on ports that aren't available
+        if port not in serialUtils.listAvailableSerialPorts(portname_only=True):
+            logging.warning(f"Device.connect() : port not available {port}")
+            self.status = DeviceStatus.NOT_FOUND
+            return self.status
 
         try:
+            logging.warning(f"Device.connect() : Connecting to device on port {port}")
+            self.port = port
             serialUtils.connect(self.port)
             self.status = DeviceStatus.IDLE
         except:
             self.status = DeviceStatus.ERROR
         
         return self.status
+
+
+    #-------------------------------------------------------------
+    def reconnect(self, port) -> DeviceStatus:
+        self.disconnect()
+
+        return self.connect(port)
+    
+
+    #-------------------------------------------------------------
+    def check_for_device(self):
+        #will terminate once the device is found
+        while not self.checker_thread_killed and self.status in [DeviceStatus.NOT_FOUND]:
+            logging.warning(f"Checking for device on port {self.port}")
+            self.connect()
+
+            logging.warning(f"Trying to connect to device on port {self.port} with status {self.status}")
+
+            #wait a few seconds before trying again
+            time.sleep(3)
+
+
+    def start_thread_check_for_device(self):
+        #https://stackoverflow.com/questions/25504149/why-does-running-the-flask-dev-server-run-itself-twice
+        #in dev mode, the server is started twice, so we need to check if we are in the reloader (and ignore it): we want to run in child subprocess only
+        if is_running_from_reloader():
+            return
+        
+
+        with Device.__CHECKER_THREAD_LOCK:
+            if self.checker_thread != None:
+                logging.warning(f"ABORT Checker thread already started for port {self.port}")
+                return
+            
+            logging.warning(f"Starting thread to check for device on port {self.port}")
+
+            self.checker_thread = threading.Thread(target=self.check_for_device)
+            #stop when main thread stops
+            self.checker_thread.daemon = True
+            self.checker_thread.start()
