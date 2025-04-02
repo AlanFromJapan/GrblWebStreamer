@@ -149,6 +149,54 @@ class Device:
     
 
     #-------------------------------------------------------------
+
+    #check for device status HOLD or IDLE (returns but doesn't change the status)
+    def check_device_status(self) -> DeviceStatus:
+        #ignore BUSY or ERROR states
+        if self.status not in [DeviceStatus.IDLE, DeviceStatus.HOLD]:
+            return self.status
+        
+        res = self.sendCommand(WellKnownCommands.CMD_STATUS.value)
+        if res is None:
+            status = DeviceStatus.ERROR
+        else:
+            #not perfect but should be flexible enough
+            if "hold" in res.lower():
+                status = DeviceStatus.HOLD
+            elif "idle" in res.lower():
+                status = DeviceStatus.IDLE
+            else:
+                #what the hell is this status?
+                logging.warning(f"Device.check_device_status() : unknown status '{res}', returning ERROR")
+                status = DeviceStatus.ERROR
+
+        logging.warning(f"Device.check_device_status() : status {status}")        
+        return status
+    
+    #-------------------------------------------------------------
+    
+    #attempt ONCE to reset the status to IDLE if HOLD state (changes the status)
+    def try_to_resume(self) -> DeviceStatus:
+
+        original_status = self.check_device_status()
+        logging.warning(f"Device.try_to_resume() : original status {original_status}")
+
+        if original_status == DeviceStatus.HOLD:
+            res = self.sendCommand(WellKnownCommands.CMD_RESUME.value)
+            if res is not None:
+                new_status = self.check_device_status()
+            else:
+                new_status = DeviceStatus.ERROR
+            logging.warning(f"Device.try_to_resume() : new status {new_status}")
+            self.status = new_status
+
+        #in any case, return the current status
+        return self.status
+
+
+
+
+    #-------------------------------------------------------------
     def disconnect(self):
         self.status = DeviceStatus.BUSY
         serialUtils.disconnect()
@@ -160,7 +208,7 @@ class Device:
         if port is None:
             port = self.port
 
-        if not self.status in [DeviceStatus.NOT_FOUND, DeviceStatus.ERROR]:
+        if self.status not in [DeviceStatus.NOT_FOUND, DeviceStatus.ERROR]:
             logging.warning(f"Device.connect() : wrong status {self.status}")
             #no change
             return self.status
@@ -197,6 +245,12 @@ class Device:
             self.connect()
 
             logging.warning(f"Trying to connect to device on port {self.port} with status {self.status}")
+
+            if self.status == DeviceStatus.IDLE:
+                #if the device is connected BUT in HOLD state, try to resume
+                status = self.check_device_status()
+                if status in [DeviceStatus.HOLD]:
+                    self.try_to_resume()
 
             #wait a few seconds before trying again
             time.sleep(3)
