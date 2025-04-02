@@ -149,8 +149,6 @@ def linemodifier_laserAdjust(l:str, jobParams: dict = None) -> str:
         if match != None:
             v = int(match.group(0)[1:])
             v = min(1000, v * jobParams['laserPowerAdjust'] // 100 )
-            #not sure why the 10x factor is needed, but it is.
-            #not sure why padding with 0 is needed, but it is.
             l = l[:match.start()] + f"S{v}" + l[match.end():]
 
     return l
