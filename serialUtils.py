@@ -141,6 +141,19 @@ def linemodifier_laserMinimum(l:str) -> str:
     l = re.sub("S\\d+", "S010", l)
     return l
 
+REGEX_CMD_LASER_POWER = re.compile("S\\d+")
+def linemodifier_laserAdjust(l:str, jobParams: dict = None) -> str:
+    #lasers are usually set with Sxxx where xxx is a FLOAT between 0.0 and 1000.0 (in perThousands)
+    if jobParams != None and "laserPowerAdjust" in jobParams:
+        match = REGEX_CMD_LASER_POWER.search(l)
+        if match != None:
+            v = int(match.group(0)[1:])
+            v = min(1000, v * jobParams['laserPowerAdjust'] // 100 )
+            #not sure why the 10x factor is needed, but it is.
+            #not sure why padding with 0 is needed, but it is.
+            l = l[:match.start()] + f"S{v}" + l[match.end():]
+
+    return l
 
 
 #line modifier : on delay commands, sleep for a while
@@ -199,7 +212,7 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [linemodifier_skipC
                 #check for foreceful stop
                 if forceStopCheck != None and forceStopCheck():
                     #it will stop here: so execute the outro somewhere else.
-                    logging.warn(f"Force stop requested on file {fileFullPath}.")
+                    logging.warning(f"Force stop requested on file {fileFullPath}.")
                     break
         #update status
         __STATUS = ConnectionStatus.READY
