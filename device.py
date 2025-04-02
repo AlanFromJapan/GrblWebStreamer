@@ -205,7 +205,7 @@ class Device:
     def start_thread_check_for_device(self):
         #https://stackoverflow.com/questions/25504149/why-does-running-the-flask-dev-server-run-itself-twice
         #in dev mode, the server is started twice, so we need to check if we are in the reloader (and ignore it): we want to run in child subprocess only
-        if is_running_from_reloader():
+        if not is_running_from_reloader():
             return
         
 
