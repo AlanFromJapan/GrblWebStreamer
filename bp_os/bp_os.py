@@ -44,10 +44,13 @@ def logs_page():
  
 
     body = f"""
+<a name="top"></a>
 <h1>Logs</h1>
 <p>File is at <code>{ config.myconfig["logfile"] }</code>:</p>
     <form id="theForm" method="post" >
-        <input type="submit" name="action" value="Purge logs" />
+        <input type="submit" name="action" value="Purge logs" style="background-color:red;" />
+        <button onclick="location.href='#bottom'; return false;">Go to latest message 👇</button>
+        <button onclick="location.reload(); return false;">Reload Page 🔄</button>
     </form>
 <pre>""" 
 
@@ -58,7 +61,7 @@ def logs_page():
         body += "*** NO LOG FILE ***<br/>"
         body += "Exception message: "+ str(ex)
 
-    body += "</pre>"
+    body += """</pre><a name="bottom"></a><button onclick="location.href='#top'">Back to top 👆</button><button onclick="location.reload(); return false;">Reload Page 🔄</button>"""
 
     return render_template("template01.html", pagename="Logs", pagecontent=body, latest=current_app.latest_file)
     
