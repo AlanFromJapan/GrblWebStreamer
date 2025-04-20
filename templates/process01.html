@@ -10,7 +10,7 @@
 
 <table class="process">
     <tr>
-        <td>
+        <td rowspan="2">
             <h2>Preview thumbnail</h2>
             <a href="/thumbnails/{{filename}}.png" target="_blank">
                 <img id="imgOriginal" src="/thumbnails/{{filename}}.png" class="thumbnail" alt="Click to see in full"/>
@@ -35,6 +35,24 @@
                 {% endif %}
             </div>
         </td>
+        <td>
+            <h2>Parameters</h2>
+            <table class="actions">
+                <tr>
+                    <td><strong>Laser power factor:</strong></td>
+                    <td><input id="sliderLaserPower" type="range" value="100" min="10" max="300" /> <span id="spanLaserPower">100</span>%</td>
+                    <td rowspan="2"><button onclick="resetParameters();return false;">Reset</button></td>
+                </tr>
+                <tr>
+                    <td><strong>Laser speed factor:</strong></td>
+                    <td><input id="sliderLaserSpeed" type="range" value="100" min="10" max="300" /> <span id="spanLaserSpeed">100</span>%</td>
+                    <!-- <td></td> -->
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <!-- <td></td> -->
         <td>
             <h2>Actions</h2>
                 <table class="actions">
@@ -96,6 +114,13 @@
 
 <script lang="javascript">
 
+  // Update the current slider value (each time you drag the slider handle)
+  document.getElementById("sliderLaserPower").oninput = function() {
+    document.getElementById("spanLaserPower").innerHTML = this.value;
+  } 
+  document.getElementById("sliderLaserSpeed").oninput = function() {
+    document.getElementById("spanLaserSpeed").innerHTML = this.value;
+  }   
 
 //do first because the semicolon will miss with the innertext of the next matches 
 highlight(";.+", "grey");
@@ -145,6 +170,13 @@ const intervalButtons = setInterval(function() {
  }, 1000);
   
 
+
+function resetParameters(){
+    document.getElementById("sliderLaserPower").value = 100;
+    document.getElementById("spanLaserPower").innerHTML = 100;
+    document.getElementById("sliderLaserSpeed").value = 100;
+    document.getElementById("spanLaserSpeed").innerHTML = 100;
+}
 </script>    
 {{ dbg }}
 {% endblock %}

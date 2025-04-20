@@ -57,7 +57,7 @@ M2
 
 
 #Attempts to frame tne file content (just more around where the action will be)
-def generateFrame(port, fileFullPath, pauseAtCornersInSec:float = 0.0, framingSpeendInMMPerSec:int = 20):
+def generateFrame(port, fileFullPath, pauseAtCornersInSec:float = 0.0, framingSpeendInMMPerSec:int = 20, jobParams:dict = None):
     fromto = __getFrameFromComments(fileFullPath)
 
     logging.info (f"Extracted from file: { str(fromto) }")
@@ -111,7 +111,7 @@ M2
         
         
         #not taking risks
-        serialUtils.simulateFile(port, tempfile)
+        serialUtils.simulateFile(port, tempfile, jobParams=jobParams)
     finally:
         try:
             os.remove(tempfile)

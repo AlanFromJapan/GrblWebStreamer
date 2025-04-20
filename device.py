@@ -67,35 +67,44 @@ class Device:
             self.__notifyAll(job)
 
     #-------------------------------------------------------------
-    def simulate (self, fileOnDisk, asynchronous = False, job : Job = None):
+    def simulate (self, fileOnDisk, asynchronous = False, job : Job = None, jobParams: dict = None):
         self.status = DeviceStatus.BUSY
         if asynchronous: 
-            threading.Thread(target=self.__simulateAsync, args=(fileOnDisk, job, )).start()   
+            threading.Thread(target=self.__simulateAsync, args=(fileOnDisk, job, jobParams, )).start()   
         else:   
-            self.__simulateAsync(fileOnDisk, job)
+            self.__simulateAsync(fileOnDisk, job, jobParams)
 
-    def __simulateAsync (self, fileOnDisk, job : Job = None):
-        serialUtils.simulateFile(self.port, fileOnDisk)
+    def __simulateAsync (self, fileOnDisk, job : Job = None, jobParams: dict = None):
+        serialUtils.simulateFile(self.port, fileOnDisk, jobParams=jobParams)
         self.__completeJob(job)
 
 
     #-------------------------------------------------------------
-    def burn (self, fileOnDisk, asynchronous = False, job : Job = None):
+    def burn (self, fileOnDisk, asynchronous = False, job : Job = None, jobParams: dict = None):
         self.status = DeviceStatus.BUSY
         self.emergency_stop_requested = False
         if asynchronous:
-            threading.Thread(target=self.__burnAsync, args=(fileOnDisk, job, )).start()
+            threading.Thread(target=self.__burnAsync, args=(fileOnDisk, job, jobParams, )).start()
         else:
-            self.__burnAsync(fileOnDisk, job)
+            self.__burnAsync(fileOnDisk, job, jobParams)
     
-    def __burnAsync (self, fileOnDisk, job : Job = None):
+    def __burnAsync (self, fileOnDisk, job : Job = None, jobParams: dict = None):
         #the modifiers to use when burning a file
         linemodif = [serialUtils.linemodifier_skipComments]
         if not config.myconfig.get("G4 delays handled by device", True):
             #if your device doesn't handle G4 delays, you can use this to handle them on the software "sending" side
             linemodif.append(serialUtils.linemodifier_delayCommands)
+        if "laserPowerAdjust" in jobParams:
+            #if the job parameters contain a laser power adjust, we need to modify the line
+            linemodif.append(serialUtils.linemodifier_laserAdjustPower)
+        if "laserSpeedAdjust" in jobParams:
+            #if the job parameters contain a laser Speed adjust, we need to modify the line
+            linemodif.append(serialUtils.linemodifier_laserAdjustSpeed)
 
-        serialUtils.processFile(self.port, fileOnDisk, lineModifiers=linemodif, forceStopCheck=self.__checkForJobCancellation)
+        logging.debug(f"Device.burn() : fileOnDisk {fileOnDisk} Job {job} jobParams {jobParams}")
+        logging.debug(f"Device.burn() : linemodif x{len(linemodif)} : {linemodif}")
+
+        serialUtils.processFile(self.port, fileOnDisk, lineModifiers=linemodif, forceStopCheck=self.__checkForJobCancellation, jobParams=jobParams)
         if self.emergency_stop_requested:
             #send outro
             grblUtils.sendOutroOnly(self.port)
@@ -110,28 +119,28 @@ class Device:
 
 
     #-------------------------------------------------------------
-    def frame(self, fileOnDisk, asynchronous = False, job : Job = None):
+    def frame(self, fileOnDisk, asynchronous = False, job : Job = None, jobParams: dict = None):
         self.status = DeviceStatus.BUSY
         if asynchronous:
-            threading.Thread(target=self.__frameAsync, args=(fileOnDisk,job, )).start()
+            threading.Thread(target=self.__frameAsync, args=(fileOnDisk,job, jobParams, )).start()
         else:
-            self.__frameAsync(fileOnDisk, job)
+            self.__frameAsync(fileOnDisk, job, jobParams)
 
-    def __frameAsync(self, fileOnDisk, job : Job = None):
-        grblUtils.generateFrame(self.port, fileOnDisk, framingSpeendInMMPerSec=25)
+    def __frameAsync(self, fileOnDisk, job : Job = None, jobParams: dict = None):
+        grblUtils.generateFrame(self.port, fileOnDisk, framingSpeendInMMPerSec=25, jobParams=jobParams)
         self.__completeJob(job)
 
 
     #-------------------------------------------------------------
-    def frameWithCornerPause(self, fileOnDisk, asynchronous = False, job : Job = None):
+    def frameWithCornerPause(self, fileOnDisk, asynchronous = False, job : Job = None, jobParams: dict = None):
         self.status = DeviceStatus.BUSY
         if asynchronous:
-            threading.Thread(target=self.__frameWithCornerPauseAsync, args=(fileOnDisk,job, )).start()
+            threading.Thread(target=self.__frameWithCornerPauseAsync, args=(fileOnDisk,job, jobParams, )).start()
         else:
-            self.__frameWithCornerPauseAsync(fileOnDisk, job)
+            self.__frameWithCornerPauseAsync(fileOnDisk, job, jobParams)
 
-    def __frameWithCornerPauseAsync(self, fileOnDisk, job : Job = None):
-        grblUtils.generateFrame(self.port, fileOnDisk, pauseAtCornersInSec=4, framingSpeendInMMPerSec=50)
+    def __frameWithCornerPauseAsync(self, fileOnDisk, job : Job = None, jobParams: dict = None):
+        grblUtils.generateFrame(self.port, fileOnDisk, pauseAtCornersInSec=4, framingSpeendInMMPerSec=50, jobParams=jobParams)
         self.__completeJob(job)
 
     #-------------------------------------------------------------

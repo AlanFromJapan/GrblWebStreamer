@@ -80,22 +80,34 @@ def process_file(filename):
             #notify
             for x in config.myconfig["notifiers"]: x.NotifyJobStart(j)
 
+            #params
+            jobParams = {}
+            #add params only if present and not default
+            if request.form.get("sliderLaserPower", 100, type=int) != 100:
+                jobParams['laserPowerAdjust'] = request.form.get("sliderLaserPower", 100, type=int)
+            if request.form.get("sliderLaserSpeed", 100, type=int) != 100:
+                jobParams['laserSpeedAdjust'] = request.form.get("sliderLaserSpeed", 100, type=int)
+
+            #TODO DEBUG remove me
+            print (request.form)
+            print (f"jobParams: {jobParams}")
+
             try:
                 if request.form["action"] == "simulate":
                     #do the job but with no laser power
-                    current_app.D.simulate(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.simulate(fileOnDisk, asynchronous=True, job = j, jobParams=jobParams)
 
                 elif request.form["action"] == "burn":
                     #the real thing
-                    current_app.D.burn(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.burn(fileOnDisk, asynchronous=True, job = j, jobParams=jobParams)
                     
                 elif request.form["action"] == "frame":
                     #frame the workspace SYNCHRONOUSLY
-                    current_app.D.frame(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.frame(fileOnDisk, asynchronous=True, job = j, jobParams=jobParams)
 
                 elif request.form["action"] == "frameCornerPause":
                     #frame the workspace SYNCHRONOUSLY with a few second pause at each corner
-                    current_app.D.frameWithCornerPause(fileOnDisk, asynchronous=True, job = j)
+                    current_app.D.frameWithCornerPause(fileOnDisk, asynchronous=True, job = j, jobParams=jobParams)
                     
                 else:
                     flash("Unknow or TODO implement", "error")

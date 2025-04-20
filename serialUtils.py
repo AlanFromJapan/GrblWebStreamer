@@ -128,7 +128,7 @@ def sendCommand (port, cmd:str, ignoreBusyStatus = False) -> str:
 
 
 #line modifier : set comments to None
-def linemodifier_skipComments(l:str) -> str:
+def linemodifier_skipComments(l:str, jobParams: dict = None) -> str:
     if l[0] == ";":
         return None
     else:
@@ -136,13 +136,13 @@ def linemodifier_skipComments(l:str) -> str:
 
 
 #line modifier : set laser to 1% (replace Sxxx with S010)
-def linemodifier_laserMinimum(l:str) -> str:
+def linemodifier_laserMinimum(l:str, jobParams: dict = None) -> str:
     #TODO find a way to NOT catch the final "G1 S0" that (should be here to) turn off the laser. Too late for regex now.
     l = re.sub("S\\d+", "S010", l)
     return l
 
 REGEX_CMD_LASER_POWER = re.compile("S\\d+")
-def linemodifier_laserAdjust(l:str, jobParams: dict = None) -> str:
+def linemodifier_laserAdjustPower(l:str, jobParams: dict = None) -> str:
     #lasers are usually set with Sxxx where xxx is a FLOAT between 0.0 and 1000.0 (in perThousands)
     if jobParams != None and "laserPowerAdjust" in jobParams:
         match = REGEX_CMD_LASER_POWER.search(l)
@@ -153,9 +153,20 @@ def linemodifier_laserAdjust(l:str, jobParams: dict = None) -> str:
 
     return l
 
+REGEX_CMD_LASER_SPEED = re.compile("F\\d+")
+def linemodifier_laserAdjustSpeed(l:str, jobParams: dict = None) -> str:
+    #lasers are usually set with Fxxx where xxx is a INT 
+    if jobParams != None and "laserSpeedAdjust" in jobParams:
+        match = REGEX_CMD_LASER_SPEED.search(l)
+        if match != None:
+            v = int(match.group(0)[1:])
+            v = v * jobParams['laserSpeedAdjust'] // 100 
+            l = l[:match.start()] + f"F{v}" + l[match.end():]
+
+    return l
 
 #line modifier : on delay commands, sleep for a while
-def linemodifier_delayCommands(l:str) -> str:
+def linemodifier_delayCommands(l:str, jobParams: dict = None) -> str:
     """ https://www.sainsmart.com/blogs/news/grbl-v1-1-quick-reference
     G4 Pxxx : Dwell, Pause / Delay in SECONDS
     """
@@ -169,8 +180,12 @@ def linemodifier_delayCommands(l:str) -> str:
     
 
 #process a file, line per line, applying modifiers to each line before sending them (ignore comments, change values on the fly, etc.)
-def processFile (port:str, fileFullPath:str, lineModifiers = [linemodifier_skipComments], forceStopCheck = None):
+def processFile (port:str, fileFullPath:str, lineModifiers = [linemodifier_skipComments], forceStopCheck = None, jobParams: dict = None):
     global __SERIAL, __STATUS
+
+    logging.debug(f"Processing file {fileFullPath} on port {port} with modifiers {lineModifiers}")
+    logging.debug(f"Job params: {jobParams}")
+    logging.debug(f"Force stop check: {forceStopCheck}")
 
     if __STATUS in [ConnectionStatus.BUSY, ConnectionStatus.ERROR]:
         logging.error("Status error: device is busy or in error, cannot start a new job.")
@@ -194,7 +209,7 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [linemodifier_skipC
                 if l == '':
                     continue
                 for mod in lineModifiers:
-                    l = mod(l)
+                    l = mod(l, jobParams)
                     if l == None:
                         break
                 if l != None:
@@ -224,14 +239,14 @@ def processFile (port:str, fileFullPath:str, lineModifiers = [linemodifier_skipC
 
 
 #process one file for fake (laser min val)
-def simulateFile(port:str, fileFullPath:str):
+def simulateFile(port:str, fileFullPath:str, jobParams: dict = None):
     #the modifiers to use when burning a file
     linemodif = [linemodifier_skipComments, linemodifier_laserMinimum]
     if not config.myconfig.get("G4 delays handled by device", True):
         #if your device doesn't handle G4 delays, you can use this to handle them on the software "sending" side
         linemodif.append(linemodifier_delayCommands)
 
-    processFile(port, fileFullPath, lineModifiers=linemodif)
+    processFile(port, fileFullPath, lineModifiers=linemodif, jobParams=jobParams)
 
 
 #returns serial status
