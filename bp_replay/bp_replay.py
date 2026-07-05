@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, current_app, request, flash, escape
+from flask import Blueprint, render_template, current_app, request, flash
+from markupsafe import escape
 import os
 import config
 from datetime import datetime, timedelta

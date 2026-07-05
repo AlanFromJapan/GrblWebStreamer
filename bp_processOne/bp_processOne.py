@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, current_app, request, flash, escape, redirect
+from flask import Blueprint, render_template, current_app, request, flash, redirect
+from markupsafe import escape
 import os
 import config
 import grblUtils

@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for, escape
+from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for
+from markupsafe import escape
 from werkzeug.utils import secure_filename
 import os
 import logging

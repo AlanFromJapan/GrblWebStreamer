@@ -9,7 +9,8 @@ import grbl2image.grbl2image as G2I
 from PIL import Image
 
 from werkzeug.utils import secure_filename
-from flask import flash, escape
+from flask import flash
+from markupsafe import escape
 
 REGEX_LIGHTBURN_BOUNDS=";\s+Bounds: X([0-9\.]+) Y([0-9\.]+) to X([0-9\.]+) Y([0-9\.]+)"
 REGEX_DEVICE_STATUS = "<(?P<state>[^:|]+)(?::||).*"
